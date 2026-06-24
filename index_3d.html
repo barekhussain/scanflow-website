@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ScanFlow — QR Ordering for Indian Restaurants</title>
+<meta name="description" content="Customers scan, order, and pay. Your staff gets notified instantly — on any phone. No app, no hardware. ₹999/month.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg:      #0A0A08;
+  --bg2:     #111110;
+  --bg3:     #191917;
+  --bg4:     #222220;
+  --border:  #2A2A27;
+  --border2: #3A3A36;
+  --orange:  #FF6B2B;
+  --orange2: #FF8C5A;
+  --gold:    #E8B84B;
+  --green:   #3DB87A;
+  --red:     #E05252;
+  --text:    #F5F0E8;
+  --text2:   #C8C0B4;
+  --muted:   #7A756C;
+  --muted2:  #4A4640;
+  --font-d: 'Syne', sans-serif;
+  --font-b: 'Inter', sans-serif;
+  --font-m: 'JetBrains Mono', monospace;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-b);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── DEPTH GRID BACKGROUND ── */
+.depth-grid {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.depth-grid::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,107,43,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,107,43,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  transform: perspective(800px) rotateX(70deg) translateY(-30%) scale(2.5);
+  transform-origin: 50% 100%;
+  animation: gridDrift 20s linear infinite;
+}
+@keyframes gridDrift {
+  from { background-position: 0 0; }
+  to   { background-position: 0 60px; }
+}
+.depth-grid::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, var(--bg) 0%, transparent 40%, transparent 70%, var(--bg) 100%);
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 40px;
+  background: rgba(10,10,8,0.75);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,107,43,0.1);
+  transform: translateZ(0);
+}
+.nav-logo {
+  font-family: var(--font-d);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.nav-logo .dot {
+  width: 8px; height: 8px;
+  background: var(--orange);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 12px var(--orange);
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 12px var(--orange); }
+  50%       { opacity: 0.6; transform: scale(0.8); box-shadow: 0 0 4px var(--orange); }
+}
+.nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+.nav-links a { font-size: 14px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+.nav-links a:hover { color: var(--text); }
+.nav-cta {
+  background: var(--orange) !important;
+  color: #fff !important;
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px !important;
+  transition: background 0.2s, transform 0.15s !important;
+  box-shadow: 0 4px 20px rgba(255,107,43,0.35);
+}
+.nav-cta:hover { background: var(--orange2) !important; transform: translateY(-1px); }
+@media (max-width: 640px) {
+  nav { padding: 14px 20px; }
+  .nav-links { display: none; }
+}
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 24px 80px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* floating orbs */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(80px);
+  animation: orbFloat 8s ease-in-out infinite;
+}
+.orb-1 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(255,107,43,0.12), transparent 70%);
+  top: 10%; left: 50%;
+  margin-left: -250px;
+  animation-duration: 10s;
+}
+.orb-2 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(232,184,75,0.08), transparent 70%);
+  top: 30%; left: 10%;
+  animation-duration: 7s;
+  animation-delay: -3s;
+}
+.orb-3 {
+  width: 250px; height: 250px;
+  background: radial-gradient(circle, rgba(61,184,122,0.06), transparent 70%);
+  top: 20%; right: 10%;
+  animation-duration: 9s;
+  animation-delay: -5s;
+}
+@keyframes orbFloat {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  33%       { transform: translateY(-30px) translateX(15px); }
+  66%       { transform: translateY(20px) translateX(-10px); }
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,107,43,0.1);
+  border: 1px solid rgba(255,107,43,0.25);
+  color: var(--orange2);
+  padding: 7px 18px;
+  border-radius: 40px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  position: relative;
+  z-index: 2;
+  backdrop-filter: blur(8px);
+}
+
+.hero h1 {
+  font-family: var(--font-d);
+  font-size: clamp(36px, 7vw, 80px);
+  font-weight: 800;
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  max-width: 820px;
+  margin: 0 auto 24px;
+  position: relative;
+  z-index: 2;
+}
+.hero h1 .accent { color: var(--orange); }
+
+.hero-sub {
+  font-size: clamp(16px, 2.5vw, 19px);
+  color: var(--text2);
+  max-width: 500px;
+  margin: 0 auto 40px;
+  line-height: 1.7;
+  font-weight: 300;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 72px;
+  position: relative;
+  z-index: 2;
+}
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--orange);
+  color: #fff;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 8px 32px rgba(255,107,43,0.4), 0 2px 8px rgba(255,107,43,0.2);
+}
+.btn-primary:hover {
+  background: var(--orange2);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 48px rgba(255,107,43,0.5), 0 4px 16px rgba(255,107,43,0.3);
+}
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.04);
+  color: var(--text2);
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid var(--border2);
+  transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.15s;
+  backdrop-filter: blur(8px);
+}
+.btn-secondary:hover {
+  border-color: var(--muted);
+  color: var(--text);
+  background: rgba(255,255,255,0.07);
+  transform: translateY(-2px);
+}
+
+/* ── 3D PHONE SCENE ── */
+.scene-3d {
+  position: relative;
+  z-index: 2;
+  perspective: 1200px;
+  perspective-origin: 50% 40%;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  height: 420px;
+}
+
+.phones-wrapper {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 28px;
+  transform-style: preserve-3d;
+  transition: transform 0.1s ease-out;
+}
+
+/* Base 3D tilt for phones */
+.phone-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.phone-frame {
+  width: 185px;
+  background: linear-gradient(160deg, #1e1d1b 0%, #141412 100%);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: 26px;
+  overflow: hidden;
+  position: relative;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.8),
+    0 30px 80px rgba(0,0,0,0.8),
+    0 10px 30px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.phone-frame::before {
+  content: '';
+  position: absolute;
+  top: 10px; left: 50%;
+  transform: translateX(-50%);
+  width: 44px; height: 4px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 4px;
+  z-index: 2;
+}
+/* Shine overlay */
+.phone-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 10;
+  border-radius: 26px;
+}
+.phone-screen {
+  padding: 24px 12px 16px;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Customer phone — tilted left */
+.customer-3d {
+  transform: rotateY(18deg) rotateX(6deg) translateZ(0px);
+}
+.customer-3d:hover {
+  transform: rotateY(10deg) rotateX(2deg) translateZ(20px);
+}
+.customer-phone .phone-screen { background: #1a1612; }
+
+/* Staff phone — tilted right, elevated */
+.staff-3d {
+  transform: rotateY(-18deg) rotateX(6deg) translateZ(30px) translateY(-20px);
+  margin-bottom: 0 !important;
+}
+.staff-3d:hover {
+  transform: rotateY(-10deg) rotateX(2deg) translateZ(50px) translateY(-25px);
+}
+.staff-phone .phone-screen { background: #0e0f0c; }
+
+/* Floating connector between phones */
+.connector-3d {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding-bottom: 20px;
+  transform-style: preserve-3d;
+  transform: translateZ(15px);
+}
+.conn-line {
+  width: 2px; height: 36px;
+  background: linear-gradient(to bottom, transparent, rgba(255,107,43,0.6), transparent);
+}
+.conn-dot {
+  width: 32px; height: 32px;
+  background: rgba(255,107,43,0.15);
+  border: 1px solid rgba(255,107,43,0.4);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  box-shadow: 0 0 20px rgba(255,107,43,0.3);
+  animation: connPulse 2s ease-in-out infinite;
+}
+@keyframes connPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(255,107,43,0.3); transform: scale(1); }
+  50%       { box-shadow: 0 0 40px rgba(255,107,43,0.6); transform: scale(1.1); }
+}
+
+/* Shadow planes under phones */
+.phone-shadow {
+  position: absolute;
+  bottom: -20px;
+  left: 50%; transform: translateX(-50%);
+  width: 120px; height: 20px;
+  background: radial-gradient(ellipse, rgba(255,107,43,0.2), transparent 70%);
+  border-radius: 50%;
+  filter: blur(8px);
+}
+
+/* menu UI */
+.menu-header {
+  font-family: var(--font-d);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+  text-align: center;
+  padding-top: 8px;
+}
+.menu-cat {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--orange);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.menu-item:last-of-type { border: none; }
+.item-info { display: flex; align-items: center; gap: 5px; }
+.veg-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.veg { background: var(--green); }
+.nonveg { background: var(--red); }
+.item-name { font-size: 9px; color: var(--text2); }
+.item-price { font-size: 9px; color: var(--gold); font-weight: 600; font-family: var(--font-m); }
+.cart-bar {
+  margin-top: auto;
+  background: var(--orange);
+  border-radius: 8px;
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 9px;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(255,107,43,0.4);
+}
+
+/* staff UI */
+.staff-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-top: 8px;
+}
+.staff-title {
+  font-family: var(--font-d);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text);
+}
+.live-badge {
+  font-size: 7px;
+  font-weight: 700;
+  color: var(--green);
+  background: rgba(61,184,122,0.15);
+  border: 1px solid rgba(61,184,122,0.3);
+  padding: 2px 7px;
+  border-radius: 10px;
+  letter-spacing: 0.5px;
+}
+.order-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  padding: 8px;
+  margin-bottom: 6px;
+  position: relative;
+  overflow: hidden;
+}
+.order-card.new-order { border-color: rgba(255,107,43,0.5); }
+.order-card.new-order::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--orange);
+}
+.order-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+.order-table {
+  font-family: var(--font-d);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+}
+.order-status {
+  font-size: 7px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+.status-new  { background: rgba(255,107,43,0.2); color: var(--orange); }
+.status-prep { background: rgba(232,184,75,0.2); color: var(--gold); }
+.status-done { background: rgba(61,184,122,0.2); color: var(--green); }
+.order-items { font-size: 8px; color: var(--muted); line-height: 1.7; }
+.order-total { font-size: 9px; color: var(--gold); font-weight: 600; font-family: var(--font-m); margin-top: 3px; }
+.new-indicator {
+  display: inline-flex;
+  align-items: center;
+  font-size: 7px;
+  font-weight: 700;
+  color: var(--orange);
+  background: rgba(255,107,43,0.15);
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin-left: 4px;
+  animation: newPop 0.4s ease;
+}
+@keyframes newPop {
+  from { transform: scale(0.7); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+/* ── STRIP ── */
+.strip {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 24px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+  background: linear-gradient(90deg, var(--bg2), rgba(255,107,43,0.03), var(--bg2));
+  position: relative;
+  z-index: 1;
+}
+.strip-item { display: flex; align-items: center; gap: 10px; }
+.strip-num {
+  font-family: var(--font-d);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--orange);
+  text-shadow: 0 0 30px rgba(255,107,43,0.4);
+}
+.strip-label { font-size: 13px; color: var(--muted); line-height: 1.3; }
+.strip-divider { width: 1px; height: 32px; background: var(--border); }
+
+/* ── SECTIONS ── */
+.section {
+  padding: 96px 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+.section-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--orange);
+  margin-bottom: 14px;
+}
+.section-title {
+  font-family: var(--font-d);
+  font-size: clamp(28px, 4vw, 46px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+.section-sub {
+  font-size: 16px;
+  color: var(--text2);
+  max-width: 520px;
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+/* ── HOW IT WORKS — 3D CARDS ── */
+.how-section { border-top: 1px solid var(--border); }
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 56px;
+  perspective: 1000px;
+}
+@media (max-width: 700px) { .steps-grid { grid-template-columns: 1fr; } }
+
+.how-step {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 36px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.3s, box-shadow 0.4s;
+}
+.how-step::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,107,43,0.05) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  border-radius: 20px;
+}
+.how-step:hover {
+  border-color: rgba(255,107,43,0.3);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 40px rgba(255,107,43,0.1);
+}
+.how-step:hover::before { opacity: 1; }
+
+/* Glow bottom edge on hover */
+.how-step::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 20%; right: 20%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,107,43,0.5), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.how-step:hover::after { opacity: 1; }
+
+.step-num {
+  font-family: var(--font-m);
+  font-size: 11px;
+  color: var(--orange);
+  font-weight: 500;
+  letter-spacing: 1px;
+  opacity: 0.7;
+}
+.step-icon-lg { font-size: 40px; margin-bottom: 4px; }
+.step-title {
+  font-family: var(--font-d);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text);
+}
+.step-desc { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+/* floating number badge on cards */
+.step-badge {
+  position: absolute;
+  top: 20px; right: 20px;
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: rgba(255,107,43,0.1);
+  border: 1px solid rgba(255,107,43,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-d);
+  font-size: 14px;
+  font-weight: 800;
+  color: rgba(255,107,43,0.6);
+}
+
+/* ── FEATURES — 3D FLIP CARDS ── */
+.features-section { border-top: 1px solid var(--border); }
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-top: 56px;
+  perspective: 1200px;
+}
+@media (max-width: 600px) { .features-grid { grid-template-columns: 1fr; } }
+
+.feature-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.3s, box-shadow 0.4s;
+  cursor: default;
+}
+.feature-card:hover {
+  border-color: rgba(255,107,43,0.25);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 30px rgba(255,107,43,0.08);
+}
+/* Animated gradient shimmer on hover */
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: -100%; left: -100%;
+  width: 300%; height: 300%;
+  background: conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(255,107,43,0.06) 60deg, transparent 120deg);
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+  animation: shimmerRotate 4s linear infinite;
+}
+.feature-card:hover::before { opacity: 1; }
+@keyframes shimmerRotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.feature-card.span2 {
+  grid-column: span 2;
+  background: linear-gradient(135deg, rgba(255,107,43,0.06) 0%, var(--bg2) 50%);
+  border-color: rgba(255,107,43,0.2);
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+.feature-card.span2:hover {
+  box-shadow: 0 30px 70px rgba(0,0,0,0.5), 0 0 50px rgba(255,107,43,0.12);
+}
+@media (max-width: 600px) { .feature-card.span2 { grid-column: span 1; flex-direction: column; } }
+
+.feature-icon { font-size: 28px; margin-bottom: 14px; }
+.feature-title {
+  font-family: var(--font-d);
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.feature-desc { font-size: 14px; color: var(--muted); line-height: 1.6; }
+.feature-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(61,184,122,0.1);
+  border: 1px solid rgba(61,184,122,0.25);
+  color: var(--green);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.realtime-demo { flex-shrink: 0; width: 200px; }
+.realtime-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.realtime-row:hover { border-color: var(--border2); transform: translateX(4px); }
+.realtime-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: blink 2s ease-in-out infinite;
+}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.rt-green  { background: var(--green);  box-shadow: 0 0 8px var(--green); }
+.rt-orange { background: var(--orange); box-shadow: 0 0 8px var(--orange); animation-delay: 0.7s; }
+.rt-gold   { background: var(--gold);   box-shadow: 0 0 8px var(--gold); animation-delay: 1.4s; }
+.realtime-text { color: var(--text2); line-height: 1.3; font-size: 12px; }
+.realtime-time { font-family: var(--font-m); font-size: 10px; color: var(--muted); margin-left: auto; }
+
+/* ── PRICING — 3D LIFT CARDS ── */
+.pricing-section { border-top: 1px solid var(--border); }
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 56px;
+  perspective: 1200px;
+  perspective-origin: 50% 80%;
+}
+@media (max-width: 700px) { .pricing-grid { grid-template-columns: 1fr; } }
+
+.pricing-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.5s;
+}
+.pricing-card:hover {
+  box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 10px 30px rgba(0,0,0,0.3);
+}
+.pricing-card.featured {
+  border-color: rgba(255,107,43,0.5);
+  background: linear-gradient(160deg, rgba(255,107,43,0.08) 0%, var(--bg2) 60%);
+  box-shadow: 0 0 0 1px rgba(255,107,43,0.2), 0 20px 60px rgba(255,107,43,0.1);
+}
+.pricing-card.featured:hover {
+  box-shadow: 0 50px 100px rgba(0,0,0,0.6), 0 0 60px rgba(255,107,43,0.2);
+}
+.featured-badge {
+  position: absolute;
+  top: -13px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--orange);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 14px;
+  border-radius: 20px;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 16px rgba(255,107,43,0.5);
+}
+.plan-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.plan-label.featured-label { color: var(--orange); }
+.plan-price {
+  font-family: var(--font-d);
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+.plan-price-unit { font-family: var(--font-b); font-size: 14px; color: var(--muted); font-weight: 400; }
+.plan-tables { font-size: 13px; color: var(--muted); margin-bottom: 24px; margin-top: 4px; }
+.plan-divider { height: 1px; background: var(--border); margin-bottom: 20px; }
+.plan-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+  flex: 1;
+}
+.plan-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text2);
+}
+.plan-features li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+.plan-cta {
+  display: block;
+  text-align: center;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.plan-cta-primary { background: var(--orange); color: #fff; box-shadow: 0 4px 20px rgba(255,107,43,0.4); }
+.plan-cta-primary:hover { background: var(--orange2); box-shadow: 0 8px 32px rgba(255,107,43,0.5); }
+.plan-cta-secondary {
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border2);
+}
+.plan-cta-secondary:hover { border-color: var(--muted); color: var(--text); }
+.pricing-note { text-align: center; font-size: 13px; color: var(--muted); margin-top: 24px; }
+.pricing-note strong { color: var(--text2); }
+
+/* ── LOCAL CALLOUT ── */
+.local-section {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 64px 24px;
+  background: linear-gradient(135deg, rgba(255,107,43,0.04) 0%, var(--bg2) 50%);
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+.local-section::before {
+  content: '';
+  position: absolute;
+  right: -100px; top: -100px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(255,107,43,0.06), transparent 70%);
+  pointer-events: none;
+}
+.local-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 48px;
+}
+@media (max-width: 650px) { .local-inner { flex-direction: column; text-align: center; } }
+.local-flag { font-size: 64px; flex-shrink: 0; filter: drop-shadow(0 8px 24px rgba(255,107,43,0.2)); }
+.local-title {
+  font-family: var(--font-d);
+  font-size: 26px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+.local-desc { font-size: 15px; color: var(--text2); line-height: 1.7; }
+.local-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--orange);
+  font-weight: 500;
+}
+
+/* ── FAQ ── */
+.faq-section { border-top: 1px solid var(--border); }
+
+.faq-list {
+  margin-top: 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--border);
+}
+.faq-item { background: var(--bg2); overflow: hidden; transition: background 0.2s; }
+.faq-item.open { background: var(--bg3); }
+.faq-q {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: var(--font-b);
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+  padding: 22px 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  transition: background 0.15s;
+}
+.faq-q:hover { background: rgba(255,107,43,0.04); }
+.faq-icon {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--orange);
+  flex-shrink: 0;
+  transition: transform 0.25s, background 0.25s;
+  line-height: 1;
+}
+.faq-item.open .faq-icon {
+  transform: rotate(45deg);
+  background: rgba(255,107,43,0.1);
+  border-color: rgba(255,107,43,0.3);
+}
+.faq-a {
+  font-size: 14px;
+  color: var(--text2);
+  line-height: 1.7;
+  padding: 0 28px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+.faq-item.open .faq-a { max-height: 300px; padding: 0 28px 22px; }
+
+/* ── CTA ── */
+.cta-section {
+  padding: 96px 24px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+.cta-section::before {
+  content: '';
+  position: absolute;
+  width: 700px; height: 700px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,107,43,0.08) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: ctaPulse 4s ease-in-out infinite;
+}
+@keyframes ctaPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  50%       { transform: translate(-50%, -50%) scale(1.15); opacity: 0.6; }
+}
+.cta-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 40px;
+  position: relative;
+  z-index: 2;
+}
+.whatsapp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #25D366;
+  color: #fff;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 8px 32px rgba(37,211,102,0.3);
+}
+.whatsapp-btn:hover {
+  background: #1db954;
+  transform: translateY(-3px);
+  box-shadow: 0 16px 48px rgba(37,211,102,0.4);
+}
+.cta-note { margin-top: 20px; font-size: 13px; color: var(--muted); position: relative; z-index: 2; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 32px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+.footer-logo {
+  font-family: var(--font-d);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.footer-note { font-size: 13px; color: var(--muted); }
+
+/* ── FLOATING PARTICLES ── */
+.particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: rgba(255,107,43,0.6);
+  border-radius: 50%;
+  animation: particleFloat linear infinite;
+}
+@keyframes particleFloat {
+  0%   { transform: translateY(100vh) translateX(0); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(-10vh) translateX(var(--dx, 50px)); opacity: 0; }
+}
+
+/* ── SCROLL REVEAL ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+
+/* ── UTIL ── */
+.text-orange { color: var(--orange); }
+.text-gold   { color: var(--gold); }
+.text-green  { color: var(--green); }
+</style>
+</head>
+<body>
+
+<!-- Depth grid background -->
+<div class="depth-grid"></div>
+
+<!-- Floating particles -->
+<div class="particles" id="particles"></div>
+
+<!-- ── NAV ── -->
+<nav>
+  <a class="nav-logo" href="#">
+    <span class="dot"></span>
+    ScanFlow
+  </a>
+  <ul class="nav-links">
+    <li><a href="#how-it-works">How it works</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a class="nav-cta" href="#contact">Book a demo</a></li>
+  </ul>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="hero-eyebrow">🍽️ Made for Indian restaurants</div>
+
+  <h1>
+    Customers scan.<br>
+    Staff get notified.<br>
+    <span class="accent">Orders never get lost.</span>
+  </h1>
+
+  <p class="hero-sub">
+    A QR code at every table. Customers order from their phone. Your staff sees it instantly — on any device, no app needed.
+  </p>
+
+  <div class="hero-actions">
+    <a href="#contact" class="btn-primary">
+      <span>📲</span> Book a free demo
+    </a>
+    <a href="#how-it-works" class="btn-secondary">
+      See how it works →
+    </a>
+  </div>
+
+  <!-- 3D Phone Scene -->
+  <div class="scene-3d" id="scene3d">
+    <div class="phones-wrapper" id="phonesWrapper">
+
+      <!-- Customer phone -->
+      <div class="phone-3d customer-3d">
+        <div class="phone-frame customer-phone">
+          <div class="phone-screen">
+            <div class="menu-header">Brahmaputra Kitchen</div>
+            <div class="menu-cat">Starters</div>
+            <div class="menu-item">
+              <div class="item-info"><div class="veg-dot veg"></div><div class="item-name">Veg Momos (6 pcs)</div></div>
+              <div class="item-price">₹120</div>
+            </div>
+            <div class="menu-item">
+              <div class="item-info"><div class="veg-dot nonveg"></div><div class="item-name">Chicken Tikka</div></div>
+              <div class="item-price">₹220</div>
+            </div>
+            <div class="menu-cat" style="margin-top:8px;">Mains</div>
+            <div class="menu-item">
+              <div class="item-info"><div class="veg-dot veg"></div><div class="item-name">Dal Tadka</div></div>
+              <div class="item-price">₹160</div>
+            </div>
+            <div class="menu-item">
+              <div class="item-info"><div class="veg-dot nonveg"></div><div class="item-name">Butter Chicken</div></div>
+              <div class="item-price">₹280</div>
+            </div>
+            <div class="menu-item">
+              <div class="item-info"><div class="veg-dot nonveg"></div><div class="item-name">Fish Curry</div></div>
+              <div class="item-price">₹260</div>
+            </div>
+            <div class="cart-bar">
+              <span>2 items • ₹400</span>
+              <span>Place Order →</span>
+            </div>
+          </div>
+        </div>
+        <div class="phone-shadow"></div>
+      </div>
+
+      <!-- Connector -->
+      <div class="connector-3d">
+        <div class="conn-line"></div>
+        <div class="conn-dot">⚡</div>
+        <div class="conn-line"></div>
+      </div>
+
+      <!-- Staff phone -->
+      <div class="phone-3d staff-3d">
+        <div class="phone-frame staff-phone">
+          <div class="phone-screen">
+            <div class="staff-header">
+              <div class="staff-title">Live Orders</div>
+              <div class="live-badge">● LIVE</div>
+            </div>
+            <div class="order-card new-order">
+              <div class="order-top">
+                <div class="order-table">Table 4 <span class="new-indicator">NEW</span></div>
+                <div class="order-status status-new">NEW</div>
+              </div>
+              <div class="order-items">Veg Momos × 1<br>Butter Chicken × 1<br>Roti × 2</div>
+              <div class="order-total">₹560</div>
+            </div>
+            <div class="order-card">
+              <div class="order-top">
+                <div class="order-table">Table 7</div>
+                <div class="order-status status-prep">PREP</div>
+              </div>
+              <div class="order-items">Fish Curry × 1<br>Dal Tadka × 1</div>
+              <div class="order-total">₹420</div>
+            </div>
+            <div class="order-card">
+              <div class="order-top">
+                <div class="order-table">Table 2</div>
+                <div class="order-status status-done">DONE</div>
+              </div>
+              <div class="order-items">Chicken Tikka × 1</div>
+              <div class="order-total">₹220</div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-shadow"></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── STRIP ── -->
+<div class="strip">
+  <div class="strip-item">
+    <div class="strip-num">₹999</div>
+    <div class="strip-label">Per month<br>to start</div>
+  </div>
+  <div class="strip-divider"></div>
+  <div class="strip-item">
+    <div class="strip-num">0</div>
+    <div class="strip-label">Apps for your<br>staff to install</div>
+  </div>
+  <div class="strip-divider"></div>
+  <div class="strip-item">
+    <div class="strip-num">&lt;2s</div>
+    <div class="strip-label">For order to reach<br>staff screen</div>
+  </div>
+  <div class="strip-divider"></div>
+  <div class="strip-item">
+    <div class="strip-num">100%</div>
+    <div class="strip-label">Setup done<br>by us for you</div>
+  </div>
+</div>
+
+<!-- ── HOW IT WORKS ── -->
+<section id="how-it-works" class="section how-section">
+  <div class="section-eyebrow reveal">How it works</div>
+  <h2 class="section-title reveal">Three steps.<br>Works from day one.</h2>
+  <p class="section-sub reveal">We set everything up in your restaurant. You don't need to touch any technology.</p>
+
+  <div class="steps-grid">
+    <div class="how-step reveal reveal-delay-1">
+      <div class="step-badge">1</div>
+      <div class="step-num">01 —</div>
+      <div class="step-icon-lg">📋</div>
+      <div class="step-title">We set it up for you</div>
+      <div class="step-desc">We visit your restaurant, enter your entire menu, print QR codes for every table, and set up the staff screen on your phone. Takes about one hour.</div>
+    </div>
+    <div class="how-step reveal reveal-delay-2">
+      <div class="step-badge">2</div>
+      <div class="step-num">02 —</div>
+      <div class="step-icon-lg">📱</div>
+      <div class="step-title">Customers scan and order</div>
+      <div class="step-desc">Customer scans the QR code at their table. Your menu opens on their phone. They tap what they want and place the order — no download, no login required.</div>
+    </div>
+    <div class="how-step reveal reveal-delay-3">
+      <div class="step-badge">3</div>
+      <div class="step-num">03 —</div>
+      <div class="step-icon-lg">🔔</div>
+      <div class="step-title">Staff gets notified instantly</div>
+      <div class="step-desc">The order appears on your staff screen the moment it's placed. Table number, items, total — everything visible. Mark it Preparing, then Done. That's it.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ── -->
+<section class="section features-section">
+  <div class="section-eyebrow reveal">Features</div>
+  <h2 class="section-title reveal">Built for how<br>Indian restaurants actually work.</h2>
+
+  <div class="features-grid">
+    <div class="feature-card span2 reveal">
+      <div style="flex:1">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Real-time orders on any phone</div>
+        <div class="feature-desc">Your staff doesn't need to install an app or buy new hardware. Open a browser tab on any Android or iPhone — orders appear the moment a customer places them. Works on ₹8,000 phones.</div>
+        <div class="feature-badge">✓ Works without any app download</div>
+      </div>
+      <div class="realtime-demo">
+        <div class="realtime-row">
+          <div class="realtime-dot rt-orange"></div>
+          <div class="realtime-text">Table 4 placed order</div>
+          <div class="realtime-time">just now</div>
+        </div>
+        <div class="realtime-row">
+          <div class="realtime-dot rt-gold"></div>
+          <div class="realtime-text">Table 7 is preparing</div>
+          <div class="realtime-time">4m ago</div>
+        </div>
+        <div class="realtime-row">
+          <div class="realtime-dot rt-green"></div>
+          <div class="realtime-text">Table 2 order done ✓</div>
+          <div class="realtime-time">12m ago</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature-card reveal reveal-delay-1">
+      <div class="feature-icon">🥗</div>
+      <div class="feature-title">Veg / Non-veg indicators</div>
+      <div class="feature-desc">Every dish shows the green or red dot that Indian customers expect. Toggle items available or unavailable in real time — no menu reprint needed.</div>
+    </div>
+
+    <div class="feature-card reveal reveal-delay-2">
+      <div class="feature-icon">🖨️</div>
+      <div class="feature-title">QR codes for every table</div>
+      <div class="feature-desc">We generate and print a QR code for each table in your restaurant. Laminate them, stick them on the table. Done. Each one links directly to your menu.</div>
+    </div>
+
+    <div class="feature-card reveal reveal-delay-1">
+      <div class="feature-icon">✏️</div>
+      <div class="feature-title">Update your menu anytime</div>
+      <div class="feature-desc">Change prices, add new dishes, mark items as unavailable — from your phone in seconds. No waiting, no calling anyone.</div>
+    </div>
+
+    <div class="feature-card reveal reveal-delay-2">
+      <div class="feature-icon">💬</div>
+      <div class="feature-title">Support on WhatsApp</div>
+      <div class="feature-desc">You can message us on WhatsApp any time. We respond within 2 hours. No call centres, no tickets — just a message like you'd send to anyone.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── LOCAL CALLOUT ── -->
+<div class="local-section">
+  <div class="local-inner reveal">
+    <div class="local-flag">🗺️</div>
+    <div>
+      <div class="section-eyebrow" style="margin-bottom:8px;">Starting in Assam</div>
+      <div class="local-title">We come to your restaurant. In person.</div>
+      <div class="local-desc">We're based in Jorhat. When you sign up, we visit your restaurant, set everything up, and train your staff — all in one hour. No video calls. No guides to read. Global apps can't do this. We can.</div>
+      <div class="local-detail">
+        <span>📍</span>
+        Currently serving restaurants in Jorhat, Tezpur, and nearby areas
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PRICING ── -->
+<section id="pricing" class="section pricing-section">
+  <div class="section-eyebrow reveal">Pricing</div>
+  <h2 class="section-title reveal">Simple pricing.<br>No surprises.</h2>
+  <p class="section-sub reveal">One flat monthly price. Cancel any time. No contracts, no setup fees.</p>
+
+  <div class="pricing-grid">
+    <div class="pricing-card reveal reveal-delay-1">
+      <div class="plan-label">Starter</div>
+      <div><span class="plan-price">₹999</span><span class="plan-price-unit">/month</span></div>
+      <div class="plan-tables">Up to 10 tables</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>Digital menu with QR codes</li>
+        <li>Real-time staff dashboard</li>
+        <li>Menu editor — update anytime</li>
+        <li>QR code printing page</li>
+        <li>Veg / non-veg indicators</li>
+        <li>WhatsApp support</li>
+        <li>In-person setup included</li>
+      </ul>
+      <a href="#contact" class="plan-cta plan-cta-secondary">Get started →</a>
+    </div>
+
+    <div class="pricing-card featured reveal reveal-delay-2">
+      <div class="featured-badge">Most popular</div>
+      <div class="plan-label featured-label">Growth</div>
+      <div><span class="plan-price">₹2,499</span><span class="plan-price-unit">/month</span></div>
+      <div class="plan-tables">Up to 30 tables</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>Everything in Starter</li>
+        <li>Order analytics dashboard</li>
+        <li>Multiple staff logins</li>
+        <li>Dish photos on menu</li>
+        <li>Daily order summary report</li>
+        <li>Priority WhatsApp support</li>
+      </ul>
+      <a href="#contact" class="plan-cta plan-cta-primary">Get started →</a>
+    </div>
+
+    <div class="pricing-card reveal reveal-delay-3">
+      <div class="plan-label">Chain</div>
+      <div><span class="plan-price">₹6,999</span><span class="plan-price-unit">/month</span></div>
+      <div class="plan-tables">Unlimited tables & branches</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>Everything in Growth</li>
+        <li>Multiple branch management</li>
+        <li>Central dashboard</li>
+        <li>Custom branding</li>
+        <li>Dedicated account manager</li>
+      </ul>
+      <a href="#contact" class="plan-cta plan-cta-secondary">Contact us →</a>
+    </div>
+  </div>
+
+  <div class="pricing-note reveal">
+    <strong>First month free</strong> for restaurants in Assam. Pay by UPI, any Indian card, or bank transfer.
+  </div>
+</section>
+
+<!-- ── FAQ ── -->
+<section id="faq" class="section faq-section">
+  <div class="section-eyebrow reveal">Questions</div>
+  <h2 class="section-title reveal">Common questions</h2>
+
+  <div class="faq-list reveal">
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Do my customers need to download an app?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">No app needed at all. Customers scan the QR code and the menu opens directly in their phone's browser — just like opening a website. Works on any Android or iPhone, any model.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Does my staff need to buy new hardware?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">No hardware required. The staff dashboard is a webpage you open in any phone's browser. One phone per restaurant is enough. It works on any budget Android phone, even older models.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        What if the internet is slow or goes down?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">The system works on standard 4G, which is widely available across Assam. We've built it to be lightweight and fast. If internet is completely unavailable, your staff can still take orders manually as usual — the system is an addition, not a replacement for common sense.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        How do you set it up? Do I need to do anything?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">We come to your restaurant in person. You give us your menu — even a photo of your printed menu works. We enter all the dishes, set up the staff screen on your phone, print the QR codes, and show your staff how to use it. The whole process takes about one hour. You don't need to do anything technical.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Can I change my menu prices or add new dishes?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">Yes, anytime. There's a simple menu editor page where you can add dishes, change prices, or mark items as unavailable. Changes appear on the customer menu immediately. You can also message us on WhatsApp and we'll make the changes for you.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        How do I pay? Is UPI accepted?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">Yes, UPI is accepted. You can also pay by any Indian credit or debit card. Payment is monthly — no long contracts. You can cancel any time with one WhatsApp message.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Is this only for Assam?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">Right now we are focused on restaurants in Assam — Jorhat, Tezpur, and nearby areas — because we do in-person setup. If you're in a different city, contact us and we'll let you know when we expand there.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section id="contact" class="cta-section">
+  <div class="section-eyebrow reveal" style="position:relative;z-index:2;">Get started</div>
+  <h2 class="section-title reveal" style="position:relative;z-index:2;">
+    Let's set it up in<br>your restaurant this week.
+  </h2>
+  <p class="section-sub reveal" style="margin:12px auto 0;max-width:460px;color:var(--text2);position:relative;z-index:2;">
+    Message us on WhatsApp. We'll come to your restaurant, set everything up in one hour, and give you the first month free.
+  </p>
+
+  <div class="cta-actions">
+    <a href="https://wa.me/91XXXXXXXXXX?text=Hi%2C%20I%20want%20to%20know%20more%20about%20ScanFlow%20for%20my%20restaurant." class="whatsapp-btn" target="_blank" rel="noopener">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      Message us on WhatsApp
+    </a>
+  </div>
+
+  <div class="cta-note">
+    Or email us at <span class="text-orange">hello@scanflow.in</span> · We respond within a few hours.
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-logo">
+    <span style="width:8px;height:8px;background:var(--orange);border-radius:50%;display:inline-block;box-shadow:0 0 10px var(--orange);"></span>
+    ScanFlow
+  </div>
+  <div class="footer-note">scanflow.in · QR ordering for Indian restaurants · Based in Jorhat, Assam</div>
+  <div class="footer-note" style="color:var(--muted2);">© 2026 ScanFlow</div>
+</footer>
+
+<script>
+// ── FAQ ──
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(el => el.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+// ── MOUSE PARALLAX on 3D phones ──
+const scene = document.getElementById('scene3d');
+const wrapper = document.getElementById('phonesWrapper');
+
+if (scene && wrapper) {
+  document.addEventListener('mousemove', (e) => {
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    const dx = (e.clientX - cx) / cx;
+    const dy = (e.clientY - cy) / cy;
+    wrapper.style.transform = `translate(-50%, -50%) rotateY(${dx * 8}deg) rotateX(${-dy * 5}deg)`;
+  });
+
+  scene.addEventListener('mouseleave', () => {
+    wrapper.style.transform = 'translate(-50%, -50%) rotateY(0deg) rotateX(0deg)';
+    wrapper.style.transition = 'transform 0.6s ease-out';
+  });
+  scene.addEventListener('mouseenter', () => {
+    wrapper.style.transition = 'transform 0.1s ease-out';
+  });
+}
+
+// ── SCROLL REVEAL ──
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+reveals.forEach(el => observer.observe(el));
+
+// ── PARTICLES ──
+const particleContainer = document.getElementById('particles');
+if (particleContainer) {
+  for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 3 + 1;
+    const left = Math.random() * 100;
+    const duration = Math.random() * 15 + 10;
+    const delay = Math.random() * 20;
+    const dx = (Math.random() - 0.5) * 100;
+    p.style.cssText = `
+      width: ${size}px;
+      height: ${size}px;
+      left: ${left}%;
+      animation-duration: ${duration}s;
+      animation-delay: -${delay}s;
+      --dx: ${dx}px;
+      opacity: ${Math.random() * 0.6 + 0.2};
+    `;
+    particleContainer.appendChild(p);
+  }
+}
+
+// ── ANIMATE new order badge periodically ──
+const newCard = document.querySelector('.order-card.new-order');
+if (newCard) {
+  setInterval(() => {
+    newCard.style.animation = 'none';
+    void newCard.offsetWidth;
+    newCard.style.borderColor = 'rgba(255,107,43,0.8)';
+    setTimeout(() => { newCard.style.borderColor = 'rgba(255,107,43,0.3)'; }, 500);
+    setTimeout(() => { newCard.style.borderColor = 'rgba(255,107,43,0.8)'; }, 1000);
+    setTimeout(() => { newCard.style.borderColor = 'rgba(255,107,43,0.5)'; }, 1500);
+  }, 5000);
+}
+
+// ── 3D TILT on individual cards (how-step, feature-card) ──
+document.querySelectorAll('.how-step, .feature-card, .pricing-card').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = (e.clientX - cx) / (rect.width / 2);
+    const dy = (e.clientY - cy) / (rect.height / 2);
+
+    const tiltX = -dy * 6;
+    const tiltY = dx * 6;
+    card.style.transform = `translateY(-12px) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+  });
+
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = '';
+    card.style.transition = 'transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.5s, border-color 0.3s';
+  });
+  card.addEventListener('mouseenter', () => {
+    card.style.transition = 'transform 0.15s ease-out, box-shadow 0.3s, border-color 0.2s';
+  });
+});
+</script>
+</body>
+</html>
