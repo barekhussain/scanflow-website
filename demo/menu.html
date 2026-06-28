@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Menu — ScanFlow Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root {
+  --bg:#0f0e0c; --surface:#1a1815; --surface2:#232018;
+  --border:#2e2b24; --amber:#f59e0b; --amber-dim:#b45309;
+  --amber-glow:rgba(245,158,11,0.13);
+  --green:#22c55e; --red:#ef4444;
+  --text:#f5f0e8; --text-dim:#9a9080; --text-muted:#5a5448;
+}
+html,body { background:var(--bg); color:var(--text); font-family:-apple-system,'SF Pro Display','Segoe UI',sans-serif; min-height:100vh; overscroll-behavior:none; }
+
+/* SETUP */
+#setup {
+  position:fixed; inset:0; background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  z-index:1000; padding:32px 24px;
+}
+.s-logo { font-size:12px; letter-spacing:.2em; color:var(--amber); text-transform:uppercase; font-weight:700; margin-bottom:40px; }
+.s-title { font-size:26px; font-weight:800; margin-bottom:8px; text-align:center; }
+.s-sub { font-size:14px; color:var(--text-dim); text-align:center; margin-bottom:36px; }
+.s-label { font-size:11px; letter-spacing:.14em; color:var(--text-muted); text-transform:uppercase; margin-bottom:7px; align-self:flex-start; width:100%; max-width:320px; }
+.s-input {
+  width:100%; max-width:320px; background:var(--surface); border:1.5px solid var(--border);
+  border-radius:12px; color:var(--text); font-size:16px; padding:14px 16px;
+  outline:none; transition:border-color .2s; margin-bottom:14px; font-family:inherit;
+}
+.s-input:focus { border-color:var(--amber); }
+.s-input::placeholder { color:var(--text-muted); }
+.s-btn {
+  width:100%; max-width:320px; background:var(--amber); color:#0f0e0c;
+  border:none; border-radius:13px; font-size:16px; font-weight:800;
+  padding:16px; cursor:pointer; margin-top:4px; letter-spacing:.01em;
+  transition:opacity .15s, transform .1s;
+}
+.s-btn:active { opacity:.85; transform:scale(.98); }
+
+/* HEADER */
+#app { display:none; }
+.hdr {
+  position:sticky; top:0; z-index:100;
+  background:rgba(15,14,12,.96); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border); padding:14px 18px 0;
+}
+.hdr-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.rname { font-size:19px; font-weight:800; }
+.tbadge {
+  background:var(--amber-glow); border:1px solid var(--amber-dim);
+  color:var(--amber); font-size:12px; font-weight:700; padding:4px 12px; border-radius:20px;
+}
+.pwrd { font-size:10px; color:var(--text-muted); letter-spacing:.08em; margin-top:1px; }
+
+/* TABS */
+.tabs { display:flex; gap:7px; overflow-x:auto; padding-bottom:13px; scrollbar-width:none; }
+.tabs::-webkit-scrollbar { display:none; }
+.tab {
+  flex-shrink:0; background:var(--surface); border:1.5px solid var(--border);
+  color:var(--text-dim); font-size:12px; font-weight:700; padding:6px 14px;
+  border-radius:20px; cursor:pointer; transition:all .15s; white-space:nowrap;
+  font-family:inherit;
+}
+.tab.on { background:var(--amber); border-color:var(--amber); color:#0f0e0c; }
+
+/* MENU */
+.mbody { padding:18px 14px 150px; }
+.sec-lbl {
+  font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--text-muted); margin:22px 0 10px 2px;
+}
+.sec-lbl:first-child { margin-top:0; }
+.mitem {
+  display:flex; align-items:center; gap:12px;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:14px; padding:13px; margin-bottom:9px;
+}
+.vd {
+  width:20px; height:20px; flex-shrink:0; border-radius:4px;
+  border:1.5px solid; display:flex; align-items:center; justify-content:center;
+}
+.vd.veg { border-color:var(--green); }
+.vd.veg::after { content:''; width:9px; height:9px; background:var(--green); border-radius:50%; }
+.vd.nveg { border-color:var(--red); }
+.vd.nveg::after { content:''; width:9px; height:9px; background:var(--red); border-radius:50%; }
+.iinfo { flex:1; min-width:0; }
+.iname { font-size:14px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.idesc { font-size:11px; color:var(--text-muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.iprice { font-size:14px; font-weight:800; color:var(--amber); flex-shrink:0; }
+.qc { display:flex; align-items:center; gap:0; flex-shrink:0; }
+.qadd {
+  width:32px; height:32px; background:var(--amber-glow); border:1.5px solid var(--amber-dim);
+  color:var(--amber); border-radius:8px; font-size:20px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; font-family:inherit;
+  transition:all .1s;
+}
+.qadd:active { background:var(--amber); color:#000; transform:scale(.9); }
+.qbtn {
+  width:30px; height:30px; background:var(--surface2); border:1.5px solid var(--border);
+  color:var(--text); font-size:17px; border-radius:8px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; font-family:inherit;
+  transition:all .1s;
+}
+.qbtn:active { background:var(--amber); border-color:var(--amber); color:#000; transform:scale(.9); }
+.qnum { width:26px; text-align:center; font-size:14px; font-weight:800; }
+
+/* CART BAR */
+.cbar {
+  position:fixed; bottom:0; left:0; right:0;
+  padding:10px 14px 30px;
+  background:rgba(15,14,12,.97); backdrop-filter:blur(16px);
+  border-top:1px solid var(--border);
+  transform:translateY(100%);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  z-index:200;
+}
+.cbar.on { transform:translateY(0); }
+.cbtn {
+  width:100%; background:var(--amber); color:#0f0e0c;
+  border:none; border-radius:13px; font-size:15px; font-weight:800;
+  padding:15px 18px; cursor:pointer; display:flex;
+  align-items:center; justify-content:space-between; font-family:inherit;
+  transition:opacity .15s;
+}
+.cbtn:active { opacity:.85; }
+.cbadge { background:rgba(0,0,0,.2); padding:2px 8px; border-radius:9px; font-size:12px; }
+
+/* SHEET */
+.overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.72); backdrop-filter:blur(4px);
+  z-index:300; opacity:0; pointer-events:none; transition:opacity .22s;
+}
+.overlay.on { opacity:1; pointer-events:all; }
+.sheet {
+  position:fixed; bottom:0; left:0; right:0;
+  background:var(--surface); border-radius:22px 22px 0 0;
+  border-top:1px solid var(--border); padding:20px 18px 36px;
+  z-index:400; transform:translateY(100%);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  max-height:88vh; overflow-y:auto;
+}
+.sheet.on { transform:translateY(0); }
+.shandle { width:36px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 20px; }
+.stitle { font-size:19px; font-weight:800; margin-bottom:16px; }
+.sitem {
+  display:flex; align-items:center; padding:11px 0;
+  border-bottom:1px solid var(--border); font-size:14px;
+}
+.sname { flex:1; color:var(--text); }
+.sqty { color:var(--text-dim); margin-right:10px; font-size:12px; }
+.sprice { color:var(--amber); font-weight:800; }
+.stotal {
+  display:flex; justify-content:space-between; padding:14px 0 0;
+  font-size:16px; font-weight:800; border-top:1px solid var(--border); margin-top:2px;
+}
+.stotal span:last-child { color:var(--amber); }
+.notes {
+  width:100%; background:var(--surface2); border:1.5px solid var(--border);
+  border-radius:11px; color:var(--text); font-size:13px; padding:11px 14px;
+  outline:none; resize:none; margin:16px 0; font-family:inherit;
+  transition:border-color .2s;
+}
+.notes:focus { border-color:var(--amber); }
+.notes::placeholder { color:var(--text-muted); }
+.pbtn {
+  width:100%; background:var(--amber); color:#0f0e0c;
+  border:none; border-radius:13px; font-size:16px; font-weight:800;
+  padding:16px; cursor:pointer; font-family:inherit;
+  transition:opacity .15s, transform .1s;
+}
+.pbtn:active { opacity:.85; transform:scale(.98); }
+.pbtn:disabled { opacity:.45; pointer-events:none; }
+
+/* SUCCESS */
+#success {
+  position:fixed; inset:0; background:var(--bg);
+  display:none; flex-direction:column; align-items:center; justify-content:center;
+  z-index:500; padding:32px; text-align:center;
+}
+.sico { font-size:60px; margin-bottom:20px; animation:pop .4s cubic-bezier(.34,1.56,.64,1); }
+@keyframes pop { 0%{transform:scale(0)} 100%{transform:scale(1)} }
+.sictitle { font-size:26px; font-weight:800; margin-bottom:10px; }
+.sicsub { font-size:15px; color:var(--text-dim); line-height:1.6; margin-bottom:36px; }
+.morebtn {
+  background:var(--surface); border:1.5px solid var(--border);
+  color:var(--text); font-size:14px; font-weight:700;
+  padding:13px 28px; border-radius:13px; cursor:pointer; font-family:inherit;
+  transition:border-color .15s;
+}
+.morebtn:active { border-color:var(--amber); }
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup">
+  <div class="s-logo">⚡ ScanFlow</div>
+  <div class="s-title">Set up for this table</div>
+  <div class="s-sub">Takes 5 seconds. Then hand it to the customer.</div>
+  <div class="s-label">Restaurant name</div>
+  <input class="s-input" id="rname" type="text" placeholder="e.g. Brahmaputra Kitchen" autocomplete="off" />
+  <div class="s-label">Table number</div>
+  <input class="s-input" id="tnum" type="number" placeholder="4" min="1" max="99" />
+  <button class="s-btn" onclick="startDemo()">Open Menu →</button>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="hdr">
+    <div class="hdr-top">
+      <div>
+        <div class="rname" id="rname-display"></div>
+        <div class="pwrd">powered by ScanFlow</div>
+      </div>
+      <div class="tbadge" id="tbadge"></div>
+    </div>
+    <div class="tabs" id="tabs"></div>
+  </div>
+  <div class="mbody" id="mbody"></div>
+  <div class="cbar" id="cbar">
+    <button class="cbtn" onclick="openSheet()">
+      <span id="clabel">View Order</span>
+      <span class="cbadge" id="ctotal">₹0</span>
+    </button>
+  </div>
+</div>
+
+<!-- SHEET -->
+<div class="overlay" id="ov" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="shandle"></div>
+  <div class="stitle">Your Order</div>
+  <div id="sitems"></div>
+  <div class="stotal"><span>Total</span><span id="stotalamt">₹0</span></div>
+  <textarea class="notes" id="notes" rows="2" placeholder="Any special requests? (optional)"></textarea>
+  <button class="pbtn" id="pbtn" onclick="placeOrder()">Place Order</button>
+</div>
+
+<!-- SUCCESS -->
+<div id="success">
+  <div class="sico">✅</div>
+  <div class="sictitle">Order Sent!</div>
+  <div class="sicsub" id="sicsub"></div>
+  <button class="morebtn" onclick="orderMore()">Order More Items</button>
+</div>
+
+<script>
+// ─── PASTE YOUR SUPABASE KEYS HERE ───────────────────────────────────
+const SUPABASE_URL      = 'https://dlyirthucquguhqvpcdi.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRseWlydGh1Y3F1Z3VocXZwY2RpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1ODA3MzcsImV4cCI6MjA5ODE1NjczN30.qCMMhXyyS36eTmm1swJ-T0sogQwC51p_1upzxkYvqEU';
+// ─────────────────────────────────────────────────────────────────────
+
+let sb = null;
+let cart = {};
+let tableNum = 1;
+let activeCat = 'All';
+
+const MENU = [
+  {id:1,  name:'Veg Spring Roll',      desc:'Crispy rolls, mixed vegetables',        price:120, cat:'Starters',      veg:true},
+  {id:2,  name:'Chicken 65',           desc:'Spicy fried chicken, South Indian style',price:180, cat:'Starters',     veg:false},
+  {id:3,  name:'Paneer Tikka',         desc:'Grilled cottage cheese, mint chutney',  price:160, cat:'Starters',      veg:true},
+  {id:4,  name:'Fish Fry',             desc:'Fresh river fish, marinated & fried',   price:200, cat:'Starters',      veg:false},
+  {id:5,  name:'Dal Tadka',            desc:'Yellow lentils with ghee tempering',    price:130, cat:'Main Course',   veg:true},
+  {id:6,  name:'Paneer Butter Masala', desc:'Rich tomato-based paneer curry',        price:200, cat:'Main Course',   veg:true},
+  {id:7,  name:'Chicken Curry',        desc:'Home-style chicken in aromatic gravy',  price:220, cat:'Main Course',   veg:false},
+  {id:8,  name:'Mutton Rogan Josh',    desc:'Slow-cooked mutton, Kashmiri spices',   price:280, cat:'Main Course',   veg:false},
+  {id:9,  name:'Fish Curry',           desc:'Assamese style, mustard gravy',         price:240, cat:'Main Course',   veg:false},
+  {id:10, name:'Aloo Gobi',            desc:'Potato and cauliflower, dry style',     price:150, cat:'Main Course',   veg:true},
+  {id:11, name:'Butter Naan',          desc:'Leavened bread baked in tandoor',       price:50,  cat:'Breads & Rice', veg:true},
+  {id:12, name:'Roti (2 pcs)',         desc:'Whole wheat, freshly made',             price:40,  cat:'Breads & Rice', veg:true},
+  {id:13, name:'Steamed Rice',         desc:'Long grain basmati rice',               price:70,  cat:'Breads & Rice', veg:true},
+  {id:14, name:'Jeera Rice',           desc:'Basmati with cumin tempering',          price:90,  cat:'Breads & Rice', veg:true},
+  {id:15, name:'Mango Lassi',          desc:'Chilled yogurt drink, Alphonso mango',  price:80,  cat:'Drinks',        veg:true},
+  {id:16, name:'Masala Chai',          desc:'Spiced milk tea, Assam leaves',         price:40,  cat:'Drinks',        veg:true},
+  {id:17, name:'Fresh Lime Soda',      desc:'Sweet or salted',                       price:60,  cat:'Drinks',        veg:true},
+  {id:18, name:'Cold Coffee',          desc:'Blended with ice cream',                price:100, cat:'Drinks',        veg:true},
+  {id:19, name:'Gulab Jamun (2 pcs)',  desc:'Soft milk dumplings in rose syrup',     price:70,  cat:'Desserts',      veg:true},
+  {id:20, name:'Rasmalai',             desc:'Cottage cheese in saffron milk',        price:90,  cat:'Desserts',      veg:true},
+];
+
+const CATS = ['All', ...new Set(MENU.map(i => i.cat))];
+
+function startDemo() {
+  const name  = document.getElementById('rname').value.trim();
+  const table = parseInt(document.getElementById('tnum').value);
+  const ri = document.getElementById('rname');
+  const ti = document.getElementById('tnum');
+  if (!name)        { ri.style.borderColor='#ef4444'; ri.focus(); return; }
+  if (!table||table<1){ ti.style.borderColor='#ef4444'; ti.focus(); return; }
+
+  tableNum = table;
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('app').style.display   = 'block';
+  document.getElementById('rname-display').textContent = name;
+  document.getElementById('tbadge').textContent         = `Table ${table}`;
+
+  renderTabs(); renderMenu('All');
+}
+
+function renderTabs() {
+  document.getElementById('tabs').innerHTML = CATS.map(c =>
+    `<button class="tab${c==='All'?' on':''}" onclick="switchCat('${c}',this)">${c}</button>`
+  ).join('');
+}
+
+function switchCat(cat, btn) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on'); activeCat = cat; renderMenu(cat);
+}
+
+function renderMenu(cat) {
+  const items = cat==='All' ? MENU : MENU.filter(i=>i.cat===cat);
+  const byCat = {};
+  items.forEach(i=>{ (byCat[i.cat]||(byCat[i.cat]=[])).push(i); });
+
+  document.getElementById('mbody').innerHTML = Object.entries(byCat).map(([c,arr])=>`
+    ${cat==='All'?`<div class="sec-lbl">${c}</div>`:''}
+    ${arr.map(item=>`
+      <div class="mitem">
+        <div class="vd ${item.veg?'veg':'nveg'}"></div>
+        <div class="iinfo">
+          <div class="iname">${item.name}</div>
+          <div class="idesc">${item.desc}</div>
+        </div>
+        <div class="iprice">₹${item.price}</div>
+        <div class="qc" id="q${item.id}">${qcHtml(item.id)}</div>
+      </div>`).join('')}
+  `).join('');
+}
+
+function qcHtml(id) {
+  const q = cart[id]||0;
+  return q>0
+    ? `<button class="qbtn" onclick="chg(${id},-1)">−</button><span class="qnum">${q}</span><button class="qbtn" onclick="chg(${id},1)">+</button>`
+    : `<button class="qadd" onclick="chg(${id},1)">+</button>`;
+}
+
+function chg(id, d) {
+  cart[id] = Math.max(0,(cart[id]||0)+d);
+  if (!cart[id]) delete cart[id];
+  const el = document.getElementById('q'+id);
+  if (el) el.innerHTML = qcHtml(id);
+  syncCart();
+}
+
+function syncCart() {
+  const entries = Object.entries(cart);
+  const total   = entries.reduce((s,[id,q])=>{ const i=MENU.find(m=>m.id==id); return s+(i?i.price*q:0); },0);
+  const count   = entries.reduce((s,[,q])=>s+q,0);
+  const bar     = document.getElementById('cbar');
+  if (count>0) {
+    bar.classList.add('on');
+    document.getElementById('clabel').textContent = `View Order (${count} item${count>1?'s':''})`;
+    document.getElementById('ctotal').textContent  = `₹${total}`;
+  } else { bar.classList.remove('on'); }
+}
+
+function openSheet() {
+  const entries = Object.entries(cart);
+  const total   = entries.reduce((s,[id,q])=>{ const i=MENU.find(m=>m.id==id); return s+(i?i.price*q:0); },0);
+  document.getElementById('sitems').innerHTML = entries.map(([id,q])=>{
+    const i = MENU.find(m=>m.id==id);
+    return `<div class="sitem"><span class="sname">${i.name}</span><span class="sqty">×${q}</span><span class="sprice">₹${i.price*q}</span></div>`;
+  }).join('');
+  document.getElementById('stotalamt').textContent = `₹${total}`;
+  document.getElementById('ov').classList.add('on');
+  document.getElementById('sheet').classList.add('on');
+}
+
+function closeSheet() {
+  document.getElementById('ov').classList.remove('on');
+  document.getElementById('sheet').classList.remove('on');
+}
+
+async function placeOrder() {
+  const btn = document.getElementById('pbtn');
+  btn.disabled = true; btn.textContent = 'Sending…';
+
+  const entries = Object.entries(cart);
+  const items   = entries.map(([id,qty])=>{ const i=MENU.find(m=>m.id==id); return {name:i.name,qty,price:i.price}; });
+  const total   = items.reduce((s,i)=>s+i.price*i.qty,0);
+  const notes   = document.getElementById('notes').value.trim();
+  if (notes) items.push({name:`📝 Note: ${notes}`,qty:0,price:0});
+
+  const order = { table_number:tableNum, items, total, status:'new', created_at:new Date().toISOString() };
+
+  // Try Supabase (cross-device)
+  let sent = false;
+  try {
+    const {error} = await sb.from('orders').insert([{table_number:tableNum,items,total,status:'new'}]);
+    if (!error) sent = true;
+  } catch(_) {}
+
+  // Fallback: BroadcastChannel (same device)
+  if (!sent) {
+    try {
+      const bc = new BroadcastChannel('scanflow');
+      bc.postMessage({...order, id:Date.now()});
+      bc.close();
+    } catch(_) {}
+  }
+
+  closeSheet();
+  document.getElementById('sicsub').innerHTML =
+    `Your order has been sent to the kitchen.<br><strong>Table ${tableNum}</strong> — staff notified instantly.`;
+  document.getElementById('success').style.display = 'flex';
+  cart = {};
+  document.getElementById('cbar').classList.remove('on');
+}
+
+function orderMore() {
+  document.getElementById('success').style.display = 'none';
+  document.getElementById('notes').value = '';
+  const btn = document.getElementById('pbtn');
+  btn.disabled = false; btn.textContent = 'Place Order';
+  renderMenu(activeCat);
+}
+
+// URL param prefill (for QR codes with ?name=...&table=...)
+window.addEventListener('DOMContentLoaded', ()=>{
+  const p = new URLSearchParams(location.search);
+  if (p.get('name'))  document.getElementById('rname').value = p.get('name');
+  if (p.get('table')) document.getElementById('tnum').value  = p.get('table');
+});
+</script>
+</body>
+</html>
