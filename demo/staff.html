@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Staff Dashboard — ScanFlow</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+:root {
+  --bg:#080806; --surface:#111009; --surface2:#181510;
+  --border:#252218; --amber:#f59e0b; --amber-dim:#92400e;
+  --amber-glow:rgba(245,158,11,0.1);
+  --green:#22c55e; --green-glow:rgba(34,197,94,0.12);
+  --blue:#3b82f6; --text:#f5f0e8; --text-dim:#8a8070; --text-muted:#4a4438;
+  --new:#f59e0b; --prep:#3b82f6; --done:#22c55e;
+}
+html,body { background:var(--bg); color:var(--text); font-family:-apple-system,'SF Pro Display','Segoe UI',sans-serif; min-height:100vh; overscroll-behavior:none; }
+
+/* SETUP */
+#setup {
+  position:fixed; inset:0; background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  z-index:1000; padding:32px 24px;
+}
+.s-logo { font-size:12px; letter-spacing:.2em; color:var(--amber); text-transform:uppercase; font-weight:700; margin-bottom:36px; }
+.s-title { font-size:26px; font-weight:800; margin-bottom:8px; text-align:center; }
+.s-sub { font-size:14px; color:var(--text-dim); text-align:center; margin-bottom:36px; line-height:1.5; }
+.s-label { font-size:11px; letter-spacing:.14em; color:var(--text-muted); text-transform:uppercase; margin-bottom:7px; align-self:flex-start; width:100%; max-width:320px; }
+.s-input {
+  width:100%; max-width:320px; background:var(--surface); border:1.5px solid var(--border);
+  border-radius:12px; color:var(--text); font-size:16px; padding:14px 16px;
+  outline:none; transition:border-color .2s; margin-bottom:14px; font-family:inherit;
+}
+.s-input:focus { border-color:var(--amber); }
+.s-input::placeholder { color:var(--text-muted); }
+.s-btn {
+  width:100%; max-width:320px; background:var(--amber); color:#0f0e0c;
+  border:none; border-radius:13px; font-size:16px; font-weight:800;
+  padding:16px; cursor:pointer; margin-top:4px; font-family:inherit;
+  transition:opacity .15s, transform .1s;
+}
+.s-btn:active { opacity:.85; transform:scale(.98); }
+.s-hint { font-size:11px; color:var(--text-muted); text-align:center; margin-top:16px; max-width:280px; line-height:1.6; }
+
+/* HEADER */
+#app { display:none; }
+.hdr {
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:14px 16px; position:sticky; top:0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.hdr-left { display:flex; flex-direction:column; }
+.hdr-brand { font-size:11px; letter-spacing:.14em; color:var(--amber); text-transform:uppercase; font-weight:700; }
+.hdr-rname { font-size:18px; font-weight:800; margin-top:2px; }
+.hdr-right { display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
+.conn-pill {
+  display:flex; align-items:center; gap:5px;
+  font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px;
+  background:var(--amber-glow); border:1px solid var(--amber-dim); color:var(--amber);
+}
+.conn-dot { width:6px; height:6px; border-radius:50%; background:var(--amber); animation:pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.conn-pill.live .conn-dot { background:var(--green); animation:none; }
+.conn-pill.live { background:var(--green-glow); border-color:rgba(34,197,94,.3); color:var(--green); }
+
+/* STATS BAR */
+.stats {
+  display:flex; background:var(--surface); border-bottom:1px solid var(--border);
+  padding:10px 16px; gap:16px;
+}
+.stat { flex:1; text-align:center; }
+.stat-num { font-size:20px; font-weight:800; }
+.stat-lbl { font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.1em; margin-top:1px; }
+.stat-num.new { color:var(--new); }
+.stat-num.prep { color:var(--prep); }
+.stat-num.done { color:var(--done); }
+
+/* ORDERS BODY */
+.body { padding:12px; padding-bottom:60px; }
+
+/* EMPTY STATE */
+.empty {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:80px 32px; text-align:center;
+}
+.empty-icon { font-size:48px; margin-bottom:16px; opacity:.4; }
+.empty-title { font-size:16px; font-weight:700; color:var(--text-dim); margin-bottom:6px; }
+.empty-sub { font-size:13px; color:var(--text-muted); line-height:1.6; }
+
+/* ORDER CARD */
+.ocard {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:16px; margin-bottom:10px; overflow:hidden;
+  transition:border-color .3s;
+  animation:slidein .35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes slidein { 0%{transform:translateY(-16px);opacity:0} 100%{transform:translateY(0);opacity:1} }
+
+.ocard.status-new  { border-left:3px solid var(--new); }
+.ocard.status-prep { border-left:3px solid var(--prep); border-color:rgba(59,130,246,.3); }
+.ocard.status-done { border-left:3px solid var(--done); opacity:.55; }
+
+.ocard-top {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 14px 10px;
+}
+.otable-num { font-size:22px; font-weight:900; color:var(--amber); }
+.otime { font-size:11px; color:var(--text-muted); }
+.ostatus {
+  font-size:10px; font-weight:800; padding:4px 10px; border-radius:20px;
+  text-transform:uppercase; letter-spacing:.08em;
+}
+.ostatus.new  { background:rgba(245,158,11,.15); color:var(--new); border:1px solid rgba(245,158,11,.3); }
+.ostatus.prep { background:rgba(59,130,246,.15); color:var(--prep); border:1px solid rgba(59,130,246,.3); }
+.ostatus.done { background:rgba(34,197,94,.1); color:var(--done); border:1px solid rgba(34,197,94,.2); }
+
+.oitems { padding:0 14px 12px; }
+.oitem { font-size:13px; color:var(--text-dim); padding:3px 0; display:flex; align-items:center; gap:6px; }
+.oitem-qty { font-size:11px; color:var(--text-muted); font-weight:700; }
+.oitem.note { color:var(--amber); font-style:italic; font-size:12px; }
+
+.odivider { height:1px; background:var(--border); margin:0 14px; }
+
+.ocard-bottom { padding:10px 14px; display:flex; align-items:center; justify-content:space-between; }
+.ototal { font-size:14px; font-weight:800; color:var(--amber); }
+
+.actions { display:flex; gap:8px; }
+.abtn {
+  font-size:12px; font-weight:800; padding:7px 14px; border-radius:9px;
+  border:none; cursor:pointer; font-family:inherit; transition:all .15s;
+  letter-spacing:.02em;
+}
+.abtn:active { transform:scale(.95); }
+.abtn-prep { background:rgba(59,130,246,.15); color:var(--prep); border:1px solid rgba(59,130,246,.3); }
+.abtn-prep:active { background:var(--blue); color:#fff; }
+.abtn-done { background:rgba(34,197,94,.12); color:var(--done); border:1px solid rgba(34,197,94,.25); }
+.abtn-done:active { background:var(--green); color:#fff; }
+
+/* NEW ORDER FLASH */
+.flash-bar {
+  position:fixed; top:0; left:0; right:0; height:3px;
+  background:var(--amber); z-index:999;
+  transform:scaleX(0); transform-origin:left;
+  transition:transform .4s ease-out;
+}
+.flash-bar.active { transform:scaleX(1); }
+
+/* TOAST */
+.toast {
+  position:fixed; top:16px; left:50%; transform:translateX(-50%) translateY(-80px);
+  background:var(--amber); color:#0f0e0c;
+  font-size:14px; font-weight:800;
+  padding:12px 20px; border-radius:12px;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+  z-index:999; white-space:nowrap;
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setup">
+  <div class="s-logo">⚡ ScanFlow — Staff View</div>
+  <div class="s-title">Open staff dashboard</div>
+  <div class="s-sub">Keep this screen open on your phone.<br>Orders appear here the moment they're placed.</div>
+  <div class="s-label">Restaurant name</div>
+  <input class="s-input" id="rname" type="text" placeholder="e.g. Brahmaputra Kitchen" autocomplete="off" />
+  <button class="s-btn" onclick="startDashboard()">Open Dashboard →</button>
+  <div class="s-hint">💡 Open menu.html on another device to demo ordering in real time</div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="flash-bar" id="flash"></div>
+  <div class="toast" id="toast"></div>
+
+  <div class="hdr">
+    <div class="hdr-left">
+      <div class="hdr-brand">⚡ ScanFlow Staff</div>
+      <div class="hdr-rname" id="rname-display"></div>
+    </div>
+    <div class="hdr-right">
+      <div class="conn-pill" id="conn-pill">
+        <div class="conn-dot"></div>
+        <span id="conn-label">Connecting…</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-num new" id="cnt-new">0</div><div class="stat-lbl">New</div></div>
+    <div class="stat"><div class="stat-num prep" id="cnt-prep">0</div><div class="stat-lbl">Preparing</div></div>
+    <div class="stat"><div class="stat-num done" id="cnt-done">0</div><div class="stat-lbl">Done Today</div></div>
+  </div>
+
+  <div class="body" id="orders-body">
+    <div class="empty" id="empty-state">
+      <div class="empty-icon">🔔</div>
+      <div class="empty-title">Waiting for orders</div>
+      <div class="empty-sub">When a customer places an order on the menu page, it appears here instantly.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── PASTE YOUR SUPABASE KEYS HERE ───────────────────────────────────
+const SUPABASE_URL      = 'https://dlyirthucquguhqvpcdi.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRseWlydGh1Y3F1Z3VocXZwY2RpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1ODA3MzcsImV4cCI6MjA5ODE1NjczN30.qCMMhXyyS36eTmm1swJ-T0sogQwC51p_1upzxkYvqEU';
+// ─────────────────────────────────────────────────────────────────────
+
+let sb = null;
+let orders = [];
+let bc = null;
+
+function startDashboard() {
+  const name = document.getElementById('rname').value.trim();
+  if (!name) { document.getElementById('rname').style.borderColor='#ef4444'; document.getElementById('rname').focus(); return; }
+
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('app').style.display   = 'block';
+  document.getElementById('rname-display').textContent = name;
+
+  connectRealtime();
+  setupBroadcast();
+}
+
+// ── SUPABASE REALTIME ──
+function connectRealtime() {
+  try {
+    const channel = sb.channel('orders-feed')
+      .on('postgres_changes', { event:'INSERT', schema:'public', table:'orders' }, payload => {
+        addOrder(payload.new);
+      })
+      .on('postgres_changes', { event:'UPDATE', schema:'public', table:'orders' }, payload => {
+        updateOrderStatus(payload.new.id, payload.new.status);
+      })
+      .subscribe(status => {
+        const pill  = document.getElementById('conn-pill');
+        const label = document.getElementById('conn-label');
+        if (status === 'SUBSCRIBED') {
+          pill.classList.add('live');
+          label.textContent = 'Live';
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          pill.classList.remove('live');
+          label.textContent = 'Offline';
+        }
+      });
+  } catch(e) {
+    document.getElementById('conn-label').textContent = 'Local only';
+  }
+}
+
+// ── BROADCAST CHANNEL (same-device fallback) ──
+function setupBroadcast() {
+  try {
+    bc = new BroadcastChannel('scanflow');
+    bc.onmessage = e => addOrder(e.data);
+  } catch(_) {}
+}
+
+// ── ORDER MANAGEMENT ──
+function addOrder(order) {
+  // Deduplicate
+  if (orders.find(o => o.id == order.id)) return;
+  orders.unshift(order);
+  playBeep();
+  flashScreen();
+  showToast(`🔔 New order — Table ${order.table_number}`);
+  renderOrders();
+}
+
+function updateOrderStatus(id, status) {
+  const o = orders.find(o => o.id == id);
+  if (o) { o.status = status; renderOrders(); }
+}
+
+async function setStatus(id, status) {
+  // Update local
+  const o = orders.find(o => o.id == id);
+  if (o) o.status = status;
+  renderOrders();
+  // Update Supabase
+  try { await sb.from('orders').update({status}).eq('id', id); } catch(_) {}
+}
+
+function renderOrders() {
+  const body = document.getElementById('orders-body');
+  const empty = document.getElementById('empty-state');
+
+  const newOrders  = orders.filter(o=>o.status==='new');
+  const prepOrders = orders.filter(o=>o.status==='preparing');
+  const doneOrders = orders.filter(o=>o.status==='done');
+
+  document.getElementById('cnt-new').textContent  = newOrders.length;
+  document.getElementById('cnt-prep').textContent = prepOrders.length;
+  document.getElementById('cnt-done').textContent = doneOrders.length;
+
+  if (orders.length === 0) { empty.style.display='flex'; return; }
+  empty.style.display = 'none';
+
+  // Show active orders first, done at bottom
+  const sorted = [...newOrders, ...prepOrders, ...doneOrders];
+
+  body.innerHTML = sorted.map(o => {
+    const items = Array.isArray(o.items) ? o.items : [];
+    const nonZeroItems = items.filter(i=>i.qty>0);
+    const noteItems    = items.filter(i=>i.qty===0);
+    const time = o.created_at ? timeAgo(o.created_at) : 'just now';
+
+    return `
+    <div class="ocard status-${o.status}" id="oc-${o.id}">
+      <div class="ocard-top">
+        <div>
+          <div class="otable-num">Table ${o.table_number}</div>
+          <div class="otime">${time}</div>
+        </div>
+        <div class="ostatus ${o.status}">${statusLabel(o.status)}</div>
+      </div>
+      <div class="oitems">
+        ${nonZeroItems.map(i=>`<div class="oitem"><span class="oitem-qty">${i.qty}×</span>${i.name}</div>`).join('')}
+        ${noteItems.map(i=>`<div class="oitem note">${i.name}</div>`).join('')}
+      </div>
+      ${o.total ? `<div class="odivider"></div><div class="ocard-bottom">
+        <div class="ototal">₹${o.total}</div>
+        <div class="actions">${actionBtns(o)}</div>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function statusLabel(s) {
+  return s==='new'?'New Order':s==='preparing'?'Preparing':'Done ✓';
+}
+
+function actionBtns(o) {
+  if (o.status==='new')       return `<button class="abtn abtn-prep" onclick="setStatus('${o.id}','preparing')">Mark Preparing</button><button class="abtn abtn-done" onclick="setStatus('${o.id}','done')">Done</button>`;
+  if (o.status==='preparing') return `<button class="abtn abtn-done" onclick="setStatus('${o.id}','done')">Mark Done ✓</button>`;
+  return '';
+}
+
+function timeAgo(ts) {
+  const secs = Math.floor((Date.now()-new Date(ts).getTime())/1000);
+  if (secs<10)  return 'just now';
+  if (secs<60)  return `${secs}s ago`;
+  if (secs<3600) return `${Math.floor(secs/60)}m ago`;
+  return `${Math.floor(secs/3600)}h ago`;
+}
+
+// ── BEEP ──
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    [0, 160].forEach(delay => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = 880;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0, ctx.currentTime + delay/1000);
+      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + delay/1000 + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay/1000 + 0.35);
+      osc.start(ctx.currentTime + delay/1000);
+      osc.stop(ctx.currentTime + delay/1000 + 0.36);
+    });
+  } catch(_) {}
+}
+
+// ── FLASH ──
+function flashScreen() {
+  const f = document.getElementById('flash');
+  f.classList.add('active');
+  setTimeout(()=>f.classList.remove('active'), 1200);
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// Refresh timestamps every 30s
+setInterval(()=>{ if(orders.length) renderOrders(); }, 30000);
+</script>
+</body>
+</html>
