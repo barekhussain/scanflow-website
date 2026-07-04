@@ -56,6 +56,15 @@ module.exports = async function handler(req, res) {
       `${SUPABASE_URL}/rest/v1/profiles?id=eq.${callerUser.id}&select=role`,
       { headers: { apikey: SERVICE_ROLE_KEY, Authorization: `Bearer ${SERVICE_ROLE_KEY}` } }
     );
+    if (!profRes.ok) {
+      // A failed lookup is NOT the same as "not an admin" — surface the
+      // real reason (commonly a missing GRANT on the profiles table)
+      // instead of hiding it behind a misleading 403.
+      const errBody = await profRes.text();
+      console.error('ScanFlow create-user: profile lookup failed', profRes.status, errBody);
+      res.status(500).json({ error: `Could not verify admin status (profile lookup failed: ${errBody}). This is usually a missing database GRANT, not a permissions problem with your account.` });
+      return;
+    }
     const profData = await profRes.json();
     if (!Array.isArray(profData) || !profData.length || profData[0].role !== 'admin') {
       res.status(403).json({ error: 'Only an admin account can create logins.' });
