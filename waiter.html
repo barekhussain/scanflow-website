@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Waiter Tab — ScanFlow</title>
+<title>Waiter — ScanFlow</title>
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/png" href="logo/Tranparent%20logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Baloo+2:wght@800&display=swap" rel="stylesheet">
@@ -11,7 +11,11 @@
 :root{
   --bg:#F4F7FB; --card:#FFFFFF;
   --ink:#0D2539; --ink-soft:#46586B; --muted:#8493A6;
-  --blue:#1783F2; --border:#E2E9F2;
+  --blue:#1783F2; --blue-deep:#0E6BD6; --blue-soft:#E7F1FE;
+  --green:#1E9E5A; --green-soft:#E9F7EF;
+  --red:#D64541; --red-soft:#FDEDEC;
+  --amber:#E8920C; --amber-soft:#FCF1DD;
+  --border:#E2E9F2;
   --serif:'Fraunces',Georgia,serif; --sans:'Inter',system-ui,sans-serif;
   --mono:'JetBrains Mono',monospace; --round:'Baloo 2',var(--sans);
   --shadow:0 18px 50px -16px rgba(13,37,57,.22);
@@ -20,8 +24,11 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:var(--sans);background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;}
 a{color:inherit;text-decoration:none;}
-.wrap{max-width:900px;margin:0 auto;padding:0 24px;}
-.nav{background:var(--card);border-bottom:1px solid var(--border);}
+button{font-family:inherit;}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px;}
+
+/* ── Nav ── */
+.nav{background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;}
 .nav-in{display:flex;align-items:center;justify-content:space-between;height:64px;}
 .sf-logo{display:inline-flex;align-items:center;gap:8px;}
 .sf-mark{width:28px;height:28px;flex-shrink:0;}
@@ -29,22 +36,66 @@ a{color:inherit;text-decoration:none;}
 .sf-word .n{color:var(--ink);} .sf-word .b{color:var(--blue);}
 .role-pill{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.5px;background:var(--accent-soft);color:var(--accent);padding:4px 10px;border-radius:20px;margin-left:8px;}
 .who{display:flex;align-items:center;gap:14px;}
+.live-dot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+.live-dot.on{background:var(--green);box-shadow:0 0 0 0 rgba(30,158,90,.5);animation:pulse 2s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(30,158,90,.45);}70%{box-shadow:0 0 0 7px rgba(30,158,90,0);}100%{box-shadow:0 0 0 0 rgba(30,158,90,0);}}
 .who .email{font-size:13px;color:var(--ink-soft);}
-.signout{font-size:13px;font-weight:600;color:#fff;background:var(--ink);padding:9px 16px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;}
+.signout{font-size:13px;font-weight:600;color:#fff;background:var(--ink);padding:9px 16px;border-radius:10px;border:none;cursor:pointer;}
 .signout:hover{background:#16293C;}
-.main{padding:56px 0;}
-.hero-card{background:var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);padding:40px;text-align:center;}
-.badge{display:inline-block;font-size:32px;margin-bottom:14px;}
-.hero-card h1{font-family:var(--serif);font-weight:600;font-size:26px;margin-bottom:10px;}
-.hero-card p{font-size:14.5px;color:var(--ink-soft);max-width:480px;margin:0 auto;line-height:1.6;}
-.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px;}
-.fact{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:left;}
-.fact .k{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
-.fact .v{font-size:14px;font-weight:600;}
-.next{margin-top:32px;text-align:left;background:var(--accent-soft);border-radius:14px;padding:18px 20px;}
-.next h3{font-size:14px;margin-bottom:8px;}
-.next ul{padding-left:18px;font-size:13.5px;color:var(--ink-soft);line-height:1.8;}
-@media(max-width:620px){.facts{grid-template-columns:1fr;}.who .email{display:none;}}
+
+/* ── Page head ── */
+.main{padding:32px 0 60px;}
+.page-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:22px;}
+.page-head h1{font-family:var(--serif);font-weight:600;font-size:25px;}
+.page-head .rest-name{font-size:14px;color:var(--ink-soft);font-weight:400;margin-left:10px;}
+.page-head p{font-size:13px;color:var(--muted);}
+
+/* ── Guard / empty states ── */
+.state-card{max-width:480px;margin:60px auto;text-align:center;padding:36px 28px;background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);}
+.state-card .emoji{font-size:34px;margin-bottom:12px;}
+.state-card h1{font-family:var(--serif);font-weight:600;font-size:20px;margin-bottom:8px;}
+.state-card p{font-size:13.5px;color:var(--ink-soft);line-height:1.6;}
+
+/* ── Queue layout ── */
+.queue-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+@media(max-width:900px){.queue-grid{grid-template-columns:1fr;} .who .email{display:none;}}
+.queue-col{min-width:0;}
+.col-head{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.col-head h2{font-family:var(--serif);font-weight:600;font-size:16px;}
+.col-count{font-family:var(--mono);font-size:11.5px;font-weight:700;background:var(--bg);border:1px solid var(--border);color:var(--ink-soft);padding:2px 9px;border-radius:20px;}
+.col-body{display:flex;flex-direction:column;gap:12px;}
+@media(min-width:901px){.col-body{max-height:calc(100vh - 230px);overflow-y:auto;padding-right:4px;}}
+.col-empty{font-size:13px;color:var(--muted);background:var(--card);border:1px dashed var(--border);border-radius:12px;padding:20px;text-align:center;}
+
+/* ── Order card ── */
+.order-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--border);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow);}
+.order-card.st-pending{border-left-color:var(--amber);}
+.order-card.st-preparing{border-left-color:var(--blue);}
+.order-card.st-ready{border-left-color:var(--green);}
+.order-card.st-served{border-left-color:var(--muted);opacity:.75;}
+.order-card.st-cancelled{border-left-color:var(--red);opacity:.75;}
+.order-card.is-new{animation:newGlow 1.8s ease-in-out 3;}
+@keyframes newGlow{0%,100%{box-shadow:var(--shadow);}50%{box-shadow:0 0 0 4px var(--amber-soft), var(--shadow);}}
+.order-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.table-pill{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.4px;background:var(--blue);color:#fff;padding:5px 11px;border-radius:20px;}
+.order-age{font-size:11.5px;color:var(--muted);}
+.new-badge{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.5px;background:var(--amber);color:#fff;padding:2px 8px;border-radius:20px;}
+.order-items{margin-bottom:8px;}
+.order-item{font-size:13.5px;padding:3px 0;}
+.order-item .qty{font-family:var(--mono);font-weight:700;color:var(--ink-soft);margin-right:4px;}
+.item-note{font-size:11.5px;color:var(--amber);background:var(--amber-soft);border-radius:6px;padding:3px 8px;margin:3px 0 5px;display:inline-block;}
+.order-note{font-size:12px;color:var(--ink-soft);background:var(--bg);border-radius:8px;padding:7px 10px;margin-bottom:10px;line-height:1.5;}
+.order-note b{color:var(--ink);}
+.order-actions{display:flex;gap:8px;align-items:center;}
+.advance-btn{flex:1;background:var(--ink);color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;}
+.advance-btn:disabled{opacity:.6;cursor:default;}
+.cancel-link{font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;padding:6px 4px;}
+.cancel-link:hover{color:var(--red);}
+.served-recap{font-size:12px;color:var(--ink-soft);}
+
+.toggle-row{margin-top:26px;}
+.toggle-btn{font-size:13px;font-weight:600;color:var(--blue);background:var(--blue-soft);border:none;border-radius:10px;padding:9px 16px;cursor:pointer;}
+.hidden{display:none !important;}
 </style>
 </head>
 <body>
@@ -60,45 +111,260 @@ a{color:inherit;text-decoration:none;}
     <span class="sf-word"><span class="n">scan</span><span class="b">flow</span></span><span class="role-pill">WAITER</span>
   </a>
   <div class="who">
+    <span class="live-dot" id="liveDot" title="Live connection"></span>
     <span class="email" id="whoEmail"></span>
     <button class="signout" id="signoutBtn">Sign out</button>
   </div>
 </div></div>
 
 <div class="main"><div class="wrap">
-  <div class="hero-card">
-    <span class="badge">🧑‍🍳</span>
-    <h1>Waiter tab — placeholder</h1>
-    <p>Your login and role routing are working. This page confirms it. The real waiter tab (live orders by table, status buttons) gets built next.</p>
-    <div class="facts">
-      <div class="fact"><div class="k">Signed in as</div><div class="v" id="factEmail">—</div></div>
-      <div class="fact"><div class="k">Role</div><div class="v" id="factRole">—</div></div>
-      <div class="fact"><div class="k">Restaurant ID</div><div class="v" id="factRest" style="font-family:var(--mono);font-size:11.5px;">—</div></div>
+
+  <div class="state-card hidden" id="guardState">
+    <div class="emoji">🔗</div>
+    <h1 id="guardTitle">Not linked to a restaurant yet</h1>
+    <p id="guardMsg">Contact Scanfloww@gmail.com to get set up.</p>
+  </div>
+
+  <div id="queueView" class="hidden">
+    <div class="page-head">
+      <div><h1>Orders<span class="rest-name" id="restName"></span></h1></div>
+      <p>Updates live — no need to refresh.</p>
     </div>
-    <div class="next">
-      <h3>Coming here next</h3>
-      <ul>
-        <li>Live feed of new orders, grouped by table</li>
-        <li>Mark an order Preparing → Ready → Served</li>
-        <li>Sound / vibration alert on a new order</li>
-        <li>Only see tables assigned to this restaurant</li>
-      </ul>
+
+    <div class="queue-grid">
+      <div class="queue-col">
+        <div class="col-head"><h2>New</h2><span class="col-count" id="countPending">0</span></div>
+        <div class="col-body" id="sectionPending"></div>
+      </div>
+      <div class="queue-col">
+        <div class="col-head"><h2>Preparing</h2><span class="col-count" id="countPreparing">0</span></div>
+        <div class="col-body" id="sectionPreparing"></div>
+      </div>
+      <div class="queue-col">
+        <div class="col-head"><h2>Ready</h2><span class="col-count" id="countReady">0</span></div>
+        <div class="col-body" id="sectionReady"></div>
+      </div>
+    </div>
+
+    <div class="toggle-row">
+      <button class="toggle-btn" id="toggleServedBtn">Show served &amp; cancelled</button>
+      <div class="col-body hidden" id="sectionServed" style="margin-top:14px;"></div>
     </div>
   </div>
+
 </div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 <script>
+let client;
+let myProfile;
+let ordersCache = [];
+let updatingIds = new Set();
+let pollTimer = null;
+let servedShown = false;
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str == null ? '' : String(str);
+  return d.innerHTML;
+}
+
+const STATUS_META = {
+  pending:   { next: 'preparing', actionLabel: 'Start preparing' },
+  preparing: { next: 'ready',     actionLabel: 'Mark ready' },
+  ready:     { next: 'served',    actionLabel: 'Mark served' },
+  served:    { next: null,        actionLabel: null },
+  cancelled: { next: null,        actionLabel: null }
+};
+
+function timeAgo(iso){
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return 'just now';
+  if (mins === 1) return '1 min ago';
+  if (mins < 60) return mins + ' min ago';
+  const hrs = Math.floor(mins / 60);
+  return hrs + 'h ' + (mins % 60) + 'm ago';
+}
+function isRecent(iso, withinMs){
+  return (Date.now() - new Date(iso).getTime()) < withinMs;
+}
+
+/* ── Boot ── */
 (async () => {
   const profile = await scanflowRequireRole('waiter');
   if (!profile) return;
+  myProfile = profile;
+  client = getScanflowClient();
   document.getElementById('whoEmail').textContent = profile.email;
-  document.getElementById('factEmail').textContent = profile.email;
-  document.getElementById('factRole').textContent = profile.role;
-  document.getElementById('factRest').textContent = profile.restaurant_id || '— not linked yet —';
+
+  if (!profile.restaurant_id) {
+    document.getElementById('guardTitle').textContent = "Your account isn't linked to a restaurant yet";
+    document.getElementById('guardMsg').textContent = 'Contact Scanfloww@gmail.com to get set up.';
+    document.getElementById('guardState').classList.remove('hidden');
+    return;
+  }
+
+  const { data: restaurant } = await client.from('restaurants').select('*').eq('id', profile.restaurant_id).single();
+  if (restaurant) document.getElementById('restName').textContent = '— ' + restaurant.name;
+
+  document.getElementById('queueView').classList.remove('hidden');
+  await loadOrders();
+  subscribeRealtime();
+  setInterval(renderQueue, 30000); // keep "time ago" labels and NEW badges fresh
 })();
+
 document.getElementById('signoutBtn').addEventListener('click', scanflowSignOut);
+document.getElementById('toggleServedBtn').addEventListener('click', () => {
+  servedShown = !servedShown;
+  document.getElementById('toggleServedBtn').textContent = servedShown ? 'Hide served & cancelled' : 'Show served & cancelled';
+  document.getElementById('sectionServed').classList.toggle('hidden', !servedShown);
+  renderQueue();
+});
+
+/* ── Data ── */
+async function loadOrders(){
+  const { data, error } = await client
+    .from('orders')
+    .select('*, order_items(*), table:restaurant_tables(table_number)')
+    .eq('restaurant_id', myProfile.restaurant_id)
+    .order('created_at');
+  if (error) {
+    console.error('ScanFlow: could not load orders', error);
+    setLiveDot(false);
+    return;
+  }
+  ordersCache = data || [];
+  renderQueue();
+}
+
+function subscribeRealtime(){
+  const channel = client
+    .channel('waiter-orders-' + myProfile.restaurant_id)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `restaurant_id=eq.${myProfile.restaurant_id}` }, () => loadOrders())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'order_items', filter: `restaurant_id=eq.${myProfile.restaurant_id}` }, () => loadOrders())
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') { setLiveDot(true); stopPolling(); }
+      else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') { setLiveDot(false); startPolling(); }
+    });
+}
+function startPolling(){
+  if (pollTimer) return;
+  pollTimer = setInterval(loadOrders, 10000);
+}
+function stopPolling(){
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+function setLiveDot(on){
+  document.getElementById('liveDot').classList.toggle('on', on);
+}
+
+/* ── Rendering ── */
+function byCreatedAsc(a, b){ return new Date(a.created_at) - new Date(b.created_at); }
+function byCreatedDesc(a, b){ return new Date(b.created_at) - new Date(a.created_at); }
+
+function renderQueue(){
+  const pending = [], preparing = [], ready = [], servedOrCancelled = [];
+  ordersCache.forEach(o => {
+    if (o.status === 'served' || o.status === 'cancelled') servedOrCancelled.push(o);
+    else if (o.status === 'preparing') preparing.push(o);
+    else if (o.status === 'ready') ready.push(o);
+    else pending.push(o);
+  });
+  pending.sort(byCreatedAsc);
+  preparing.sort(byCreatedAsc);
+  ready.sort(byCreatedAsc);
+  servedOrCancelled.sort(byCreatedDesc);
+
+  document.getElementById('countPending').textContent = pending.length;
+  document.getElementById('countPreparing').textContent = preparing.length;
+  document.getElementById('countReady').textContent = ready.length;
+
+  document.getElementById('sectionPending').innerHTML = columnHtml(pending, 'No new orders right now.');
+  document.getElementById('sectionPreparing').innerHTML = columnHtml(preparing, 'Nothing in the kitchen right now.');
+  document.getElementById('sectionReady').innerHTML = columnHtml(ready, 'Nothing waiting to go out.');
+  if (servedShown) {
+    document.getElementById('sectionServed').innerHTML = columnHtml(servedOrCancelled.slice(0, 30), 'Nothing served or cancelled yet today.');
+  }
+
+  bindActionButtons();
+}
+
+function columnHtml(orders, emptyMsg){
+  if (!orders.length) return `<p class="col-empty">${escapeHtml(emptyMsg)}</p>`;
+  return orders.map(orderCardHtml).join('');
+}
+
+function orderCardHtml(order){
+  const meta = STATUS_META[order.status] || STATUS_META.pending;
+  const isNew = order.status === 'pending' && isRecent(order.created_at, 75000);
+  const tableNumber = order.table && order.table.table_number != null ? order.table.table_number : '—';
+  const items = (order.order_items || []).slice().sort((a, b) => (a.item_name || '').localeCompare(b.item_name || ''));
+
+  const itemsHtml = items.map(it => `
+    <div class="order-item">
+      <span class="qty">${it.quantity}×</span>${escapeHtml(it.item_name)}
+      ${it.notes ? `<div class="item-note">${escapeHtml(it.notes)}</div>` : ''}
+    </div>
+  `).join('');
+
+  const noteHtml = order.note ? `<div class="order-note"><b>Note:</b> ${escapeHtml(order.note)}</div>` : '';
+
+  let actionsHtml = '';
+  if (meta.actionLabel) {
+    actionsHtml = `
+      <div class="order-actions">
+        <button type="button" class="advance-btn" data-advance="${order.id}" data-next="${meta.next}">${meta.actionLabel}</button>
+        <button type="button" class="cancel-link" data-cancel="${order.id}">Cancel</button>
+      </div>`;
+  } else {
+    const label = order.status === 'served' ? 'Served' : 'Cancelled';
+    actionsHtml = `<div class="served-recap">${label} · ${timeAgo(order.updated_at || order.created_at)}</div>`;
+  }
+
+  return `
+    <div class="order-card st-${order.status} ${isNew ? 'is-new' : ''}" data-order-card="${order.id}">
+      <div class="order-top">
+        <span class="table-pill">TABLE ${escapeHtml(tableNumber)}</span>
+        <span class="order-age">${timeAgo(order.created_at)}</span>
+        ${isNew ? '<span class="new-badge">NEW</span>' : ''}
+      </div>
+      <div class="order-items">${itemsHtml || '<div class="order-item" style="color:var(--muted);">No items recorded</div>'}</div>
+      ${noteHtml}
+      ${actionsHtml}
+    </div>`;
+}
+
+function bindActionButtons(){
+  document.querySelectorAll('[data-advance]').forEach(btn => {
+    btn.addEventListener('click', () => advanceStatus(btn.dataset.advance, btn.dataset.next, btn));
+  });
+  document.querySelectorAll('[data-cancel]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (confirm('Cancel this order?')) advanceStatus(btn.dataset.cancel, 'cancelled', btn);
+    });
+  });
+}
+
+/* ── Actions ── */
+async function advanceStatus(orderId, nextStatus, btn){
+  if (updatingIds.has(orderId)) return;
+  updatingIds.add(orderId);
+  if (btn) { btn.disabled = true; }
+
+  const { error } = await client.from('orders').update({ status: nextStatus }).eq('id', orderId);
+  updatingIds.delete(orderId);
+
+  if (error) {
+    console.error('ScanFlow: could not update order status', error);
+    alert('Could not update this order — please try again.');
+    return;
+  }
+  const order = ordersCache.find(o => o.id === orderId);
+  if (order) order.status = nextStatus;
+  renderQueue();
+}
 </script>
 </body>
 </html>
