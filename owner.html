@@ -795,6 +795,45 @@ document.getElementById('addWaiterForm').addEventListener('submit', async (e) =>
 });
 
 /* ── Tables & QR ── */
+// Renders one table's QR onto its canvas. Primary path uses the qrcode.js
+// library (loaded from CDN) drawing straight to canvas. If that library
+// failed to load — blocked network, ad-blocker, CDN hiccup, etc. — the
+// old code silently did nothing and left a blank box with no clue why.
+// Now we fall back to drawing an image from api.qrserver.com onto the
+// same canvas (keeps the Download button working), and if that also
+// fails, we show a visible retry message instead of an empty square.
+function renderTableQR(canvas, menuUrl){
+  if (window.QRCode) {
+    QRCode.toCanvas(canvas, menuUrl, { width: 180, margin: 1 }, (err) => {
+      if (err) {
+        console.error('ScanFlow: qrcode.js render failed, falling back', err);
+        renderTableQRFallback(canvas, menuUrl);
+      }
+    });
+  } else {
+    console.warn('ScanFlow: QRCode library did not load (CDN blocked?) — using fallback image');
+    renderTableQRFallback(canvas, menuUrl);
+  }
+}
+function renderTableQRFallback(canvas, menuUrl){
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    canvas.width = 180; canvas.height = 180;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 180, 180);
+    ctx.drawImage(img, 0, 0, 180, 180);
+  };
+  img.onerror = () => {
+    console.error('ScanFlow: fallback QR image also failed to load for', menuUrl);
+    const card = canvas.closest('.qr-card');
+    if (card) {
+      canvas.outerHTML = '<div style="padding:20px 8px;font-size:12px;color:var(--muted);">QR failed to load — check your connection and refresh.</div>';
+    }
+  };
+  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(menuUrl)}`;
+}
+
 async function loadTables(){
   const { data, error } = await client.from('restaurant_tables').select('*').eq('restaurant_id', myProfile.restaurant_id).order('created_at');
   const grid = document.getElementById('tableGrid');
@@ -825,11 +864,7 @@ async function loadTables(){
   tableCache.forEach(t => {
     const menuUrl = `${window.location.origin}/menu.html?t=${t.qr_token}`;
     const canvas = document.getElementById('qr-' + t.id);
-    if (canvas && window.QRCode) {
-      QRCode.toCanvas(canvas, menuUrl, { width: 180, margin: 1 }, (err) => {
-        if (err) console.error('ScanFlow: QR render failed', err);
-      });
-    }
+    if (canvas) renderTableQR(canvas, menuUrl);
   });
 
   document.querySelectorAll('.copy-link').forEach(btn => {
@@ -844,10 +879,22 @@ async function loadTables(){
     btn.addEventListener('click', () => {
       const canvas = document.getElementById('qr-' + btn.dataset.id);
       if (!canvas) return;
-      const a = document.createElement('a');
-      a.href = canvas.toDataURL('image/png');
-      a.download = `table-${btn.dataset.table}-qr.png`;
-      a.click();
+      try {
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = `table-${btn.dataset.table}-qr.png`;
+        a.click();
+      } catch (err) {
+        // Cross-origin fallback image can taint the canvas in some browsers,
+        // blocking toDataURL. Open the source image directly instead of
+        // failing silently.
+        console.error('ScanFlow: canvas download blocked, opening QR image directly', err);
+        const t = tableCache.find(x => x.id === btn.dataset.id);
+        if (t) {
+          const menuUrl = `${window.location.origin}/menu.html?t=${t.qr_token}`;
+          window.open(`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(menuUrl)}`, '_blank');
+        }
+      }
     });
   });
   document.querySelectorAll('.delete-table').forEach(btn => {
