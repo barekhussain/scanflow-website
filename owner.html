@@ -136,11 +136,11 @@ input.inline-input{width:80px;}
 .bar-fill{height:100%;background:var(--blue);border-radius:6px;}
 .bar-row .bar-n{width:26px;text-align:right;font-family:var(--mono);font-weight:600;flex-shrink:0;}
 
-.qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;}
-.qr-card{border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;background:var(--bg);}
-.qr-card canvas{max-width:100%;height:auto !important;border-radius:8px;background:#fff;padding:8px;border:1px solid var(--border);}
-.qr-card .tnum{font-family:var(--serif);font-weight:600;font-size:16px;margin:10px 0 8px;}
-.qr-card .qr-actions{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
+.qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:20px;}
+.qr-card{border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;background:var(--bg);}
+.qr-card canvas{max-width:100%;height:auto;display:block;margin:0 auto;border-radius:16px;box-shadow:0 10px 30px -12px rgba(13,37,57,.28);}
+.qr-card .tnum{font-family:var(--mono);font-weight:600;font-size:11.5px;color:var(--muted);margin-top:10px;letter-spacing:.4px;}
+.qr-card .qr-actions{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px;}
 
 .result-box{background:var(--bg);border:1.5px dashed var(--border);border-radius:12px;padding:16px;margin-top:16px;font-size:13.5px;line-height:1.8;}
 .result-box .rk{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;}
@@ -160,10 +160,11 @@ input.inline-input{width:80px;}
 .import-summary .good{color:var(--green);}
 
 @media print{
-  .nav,.sidebar,.backdrop,.msg,.page-head,#view-tables > .note,#view-tables > .card:first-of-type,.qr-actions,#printAllBtn{display:none !important;}
+  .nav,.sidebar,.backdrop,.msg,.page-head,#view-tables > .note,#view-tables > .card:first-of-type,.qr-actions,#printAllBtn,.qr-card .tnum{display:none !important;}
   body{background:#fff;}
-  .qr-grid{grid-template-columns:repeat(3,1fr);gap:14px;}
-  .qr-card{border:1px dashed #999;break-inside:avoid;box-shadow:none;background:#fff;}
+  .qr-grid{grid-template-columns:repeat(2,1fr);gap:18px;}
+  .qr-card{border:1px dashed #999;break-inside:avoid;box-shadow:none;background:#fff;padding:8px;}
+  .qr-card canvas{box-shadow:none;}
 }
 
 @media(max-width:680px){.form-grid,.form-grid.cols-3{grid-template-columns:1fr;}table{font-size:12.5px;}.stat-grid{grid-template-columns:1fr 1fr;}}
@@ -419,8 +420,26 @@ input.inline-input{width:80px;}
 <script>
 let client;
 let myProfile;
+let myRestaurant = null;
 let menuCache = [];
 let tableCache = [];
+
+// ScanFlow footer mark, embedded as base64 so the printable QR card is a
+// single self-contained canvas — no extra image request, no broken-image
+// risk if the logo file itself is ever missing from the deployed site.
+const SCANFLOW_MARK_SRC = 'data:image/png;base64,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';
+const scanflowMark = new Image();
+let scanflowMarkReady = false;
+scanflowMark.onload = () => {
+  scanflowMarkReady = true;
+  // In the unlikely event tables rendered before this decoded, redraw
+  // them so the footer logo isn't stuck on the text fallback.
+  tableCache.forEach(t => {
+    const c = document.getElementById('qr-' + t.id);
+    if (c) renderTableCard(c, t);
+  });
+};
+scanflowMark.src = SCANFLOW_MARK_SRC;
 
 /* ── Sidebar / view switching ── */
 const sidebar = document.getElementById('sidebar');
@@ -795,43 +814,173 @@ document.getElementById('addWaiterForm').addEventListener('submit', async (e) =>
 });
 
 /* ── Tables & QR ── */
-// Renders one table's QR onto its canvas. Primary path uses the qrcode.js
-// library (loaded from CDN) drawing straight to canvas. If that library
-// failed to load — blocked network, ad-blocker, CDN hiccup, etc. — the
-// old code silently did nothing and left a blank box with no clue why.
-// Now we fall back to drawing an image from api.qrserver.com onto the
-// same canvas (keeps the Download button working), and if that also
-// fails, we show a visible retry message instead of an empty square.
-function renderTableQR(canvas, menuUrl){
+// Each table's canvas is a fully self-contained, print-ready card — not
+// just a bare QR square. Restaurant name, a clear instruction, the QR
+// itself (high error-correction so it survives lamination scuffs), a big
+// table-number pill, and a ScanFlow footer mark are all drawn together
+// so Download / Print produce exactly what's on screen. Sized 640×900 —
+// the same ratio as an A6 card — so a plain "print, then trim to the
+// dashed border" workflow lines up with a real paper size.
+const CARD_W = 640, CARD_H = 900;
+const INK = '#0D2539', INK_SOFT = '#46586B', MUTED = '#8493A6', BLUE = '#1783F2', BORDER = '#E2E9F2';
+
+function renderTableCard(canvas, table){
+  const menuUrl = `${window.location.origin}/menu.html?t=${table.qr_token}`;
+  canvas.width = CARD_W; canvas.height = CARD_H;
+  const ctx = canvas.getContext('2d');
+
+  const qrCanvas = document.createElement('canvas');
+  const QR_SIZE = 380;
+  const finish = () => drawTableCard(ctx, table, qrCanvas);
+
   if (window.QRCode) {
-    QRCode.toCanvas(canvas, menuUrl, { width: 180, margin: 1 }, (err) => {
+    QRCode.toCanvas(qrCanvas, menuUrl, {
+      width: QR_SIZE, margin: 1, errorCorrectionLevel: 'H',
+      color: { dark: '#0D2539', light: '#FFFFFF' }
+    }, (err) => {
       if (err) {
         console.error('ScanFlow: qrcode.js render failed, falling back', err);
-        renderTableQRFallback(canvas, menuUrl);
-      }
+        loadFallbackQR(qrCanvas, menuUrl, QR_SIZE, finish);
+      } else finish();
     });
   } else {
     console.warn('ScanFlow: QRCode library did not load (CDN blocked?) — using fallback image');
-    renderTableQRFallback(canvas, menuUrl);
+    loadFallbackQR(qrCanvas, menuUrl, QR_SIZE, finish);
   }
 }
-function renderTableQRFallback(canvas, menuUrl){
+
+// Fallback if qrcode.js failed to load from its CDN — draws the code from
+// api.qrserver.com onto the same offscreen canvas instead of leaving the
+// card without a QR. Flagged with __failed so drawTableCard can show a
+// clear message in the QR panel if even this fails.
+function loadFallbackQR(qrCanvas, menuUrl, size, done){
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.onload = () => {
-    canvas.width = 180; canvas.height = 180;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 180, 180);
-    ctx.drawImage(img, 0, 0, 180, 180);
+    qrCanvas.width = size; qrCanvas.height = size;
+    const qctx = qrCanvas.getContext('2d');
+    qctx.fillStyle = '#fff'; qctx.fillRect(0, 0, size, size);
+    qctx.drawImage(img, 0, 0, size, size);
+    done();
   };
   img.onerror = () => {
     console.error('ScanFlow: fallback QR image also failed to load for', menuUrl);
-    const card = canvas.closest('.qr-card');
-    if (card) {
-      canvas.outerHTML = '<div style="padding:20px 8px;font-size:12px;color:var(--muted);">QR failed to load — check your connection and refresh.</div>';
-    }
+    qrCanvas.__failed = true;
+    done();
   };
-  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(menuUrl)}`;
+  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&ecc=H&data=${encodeURIComponent(menuUrl)}`;
+}
+
+function drawRoundedRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+
+// Shrinks font size until text fits maxWidth, so long restaurant names or
+// table names (e.g. "Rooftop Patio 12") never overflow or get clipped.
+function fitFont(ctx, text, maxWidth, maxSize, minSize, weight, family){
+  let size = maxSize;
+  while (size > minSize) {
+    ctx.font = `${weight} ${size}px ${family}`;
+    if (ctx.measureText(text).width <= maxWidth) break;
+    size -= 2;
+  }
+  return size;
+}
+
+function drawTableCard(ctx, table, qrCanvas){
+  const W = CARD_W, H = CARD_H;
+  ctx.clearRect(0, 0, W, H);
+
+  // Card background + border
+  ctx.fillStyle = '#FFFFFF';
+  drawRoundedRect(ctx, 0, 0, W, H, 28);
+  ctx.fill();
+  ctx.lineWidth = 2; ctx.strokeStyle = BORDER;
+  drawRoundedRect(ctx, 1, 1, W - 2, H - 2, 27);
+  ctx.stroke();
+
+  // Top brand accent bar — clip to the card's own rounded-rect path (which
+  // is a valid shape at this size) so only the top strip's corners pick up
+  // the same 28px radius; a standalone 14px-tall bar is too short to have
+  // a 28px radius of its own.
+  ctx.save();
+  drawRoundedRect(ctx, 0, 0, W, H, 28);
+  ctx.clip();
+  ctx.fillStyle = BLUE;
+  ctx.fillRect(0, 0, W, 14);
+  ctx.restore();
+
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+
+  const restaurantName = (myRestaurant && myRestaurant.name) ? myRestaurant.name : 'Your Restaurant';
+  const nameSize = fitFont(ctx, restaurantName, W - 100, 38, 22, '700', "'Fraunces', Georgia, serif");
+  ctx.font = `700 ${nameSize}px 'Fraunces', Georgia, serif`;
+  ctx.fillStyle = INK;
+  ctx.fillText(restaurantName, W / 2, 82);
+
+  ctx.font = `500 17px 'Inter', system-ui, sans-serif`;
+  ctx.fillStyle = INK_SOFT;
+  ctx.fillText('Scan to view the menu & order', W / 2, 112);
+
+  // QR panel
+  const panelSize = 420, panelX = (W - panelSize) / 2, panelY = 145;
+  ctx.fillStyle = '#FFFFFF';
+  drawRoundedRect(ctx, panelX, panelY, panelSize, panelSize, 20);
+  ctx.fill();
+  ctx.lineWidth = 1.5; ctx.strokeStyle = BORDER;
+  drawRoundedRect(ctx, panelX, panelY, panelSize, panelSize, 20);
+  ctx.stroke();
+
+  if (qrCanvas.__failed) {
+    ctx.font = `600 16px 'Inter', system-ui, sans-serif`;
+    ctx.fillStyle = MUTED;
+    ctx.fillText('QR failed to load —', W / 2, panelY + panelSize / 2 - 6);
+    ctx.fillText('refresh and try again', W / 2, panelY + panelSize / 2 + 18);
+  } else {
+    const qrDrawSize = panelSize - 40;
+    ctx.drawImage(qrCanvas, panelX + 20, panelY + 20, qrDrawSize, qrDrawSize);
+  }
+
+  // Table number pill — the thing staff and customers actually look for
+  const pillY = panelY + panelSize + 34;
+  const tableLabel = `TABLE ${table.table_number}`;
+  const pillFontSize = fitFont(ctx, tableLabel, W - 160, 30, 18, '700', "'JetBrains Mono', monospace");
+  ctx.font = `700 ${pillFontSize}px 'JetBrains Mono', monospace`;
+  const textW = ctx.measureText(tableLabel).width;
+  const pillPadX = 28, pillH = pillFontSize + 26;
+  const pillW = textW + pillPadX * 2;
+  const pillX = (W - pillW) / 2;
+  ctx.fillStyle = BLUE;
+  drawRoundedRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
+  ctx.fill();
+  ctx.fillStyle = '#FFFFFF';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(tableLabel, W / 2, pillY + pillH / 2 + 1);
+  ctx.textBaseline = 'alphabetic';
+
+  // Divider
+  const dividerY = pillY + pillH + 40;
+  ctx.strokeStyle = BORDER; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(60, dividerY); ctx.lineTo(W - 60, dividerY); ctx.stroke();
+
+  // Footer branding — also doubles as free ScanFlow marketing on every
+  // table of every restaurant that prints one of these.
+  if (scanflowMarkReady) {
+    const logoDrawW = 170;
+    const logoDrawH = logoDrawW * (scanflowMark.height / scanflowMark.width);
+    ctx.drawImage(scanflowMark, (W - logoDrawW) / 2, dividerY + 24, logoDrawW, logoDrawH);
+  } else {
+    ctx.font = `600 15px 'Inter', system-ui, sans-serif`;
+    ctx.fillStyle = MUTED;
+    ctx.fillText('Powered by ScanFlow', W / 2, dividerY + 50);
+  }
 }
 
 async function loadTables(){
@@ -859,12 +1008,12 @@ async function loadTables(){
     </div>
   `).join('');
 
-  // Draw each QR code client-side (canvas) — no external service, no
-  // CORS issues, and canvas.toDataURL() makes downloading fully reliable.
+  // Draw each table's full branded card client-side (canvas) — no
+  // external service required for the primary path, and canvas.toDataURL()
+  // makes downloading the finished design fully reliable.
   tableCache.forEach(t => {
-    const menuUrl = `${window.location.origin}/menu.html?t=${t.qr_token}`;
     const canvas = document.getElementById('qr-' + t.id);
-    if (canvas) renderTableQR(canvas, menuUrl);
+    if (canvas) renderTableCard(canvas, t);
   });
 
   document.querySelectorAll('.copy-link').forEach(btn => {
@@ -882,18 +1031,15 @@ async function loadTables(){
       try {
         const a = document.createElement('a');
         a.href = canvas.toDataURL('image/png');
-        a.download = `table-${btn.dataset.table}-qr.png`;
+        a.download = `table-${btn.dataset.table}-scanflow-qr.png`;
         a.click();
       } catch (err) {
-        // Cross-origin fallback image can taint the canvas in some browsers,
-        // blocking toDataURL. Open the source image directly instead of
-        // failing silently.
-        console.error('ScanFlow: canvas download blocked, opening QR image directly', err);
-        const t = tableCache.find(x => x.id === btn.dataset.id);
-        if (t) {
-          const menuUrl = `${window.location.origin}/menu.html?t=${t.qr_token}`;
-          window.open(`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(menuUrl)}`, '_blank');
-        }
+        // Only happens if the primary QR library failed to load AND the
+        // fallback image host didn't send CORS headers, tainting the
+        // canvas. Rare, but say so plainly instead of silently doing
+        // nothing or quietly handing back an unbranded image.
+        console.error('ScanFlow: canvas download blocked (tainted by cross-origin fallback QR)', err);
+        showError('Could not export this card — refresh the page and try downloading again.');
       }
     });
   });
@@ -1000,6 +1146,7 @@ function renderDashboardStats(){
 
   const { data: restaurant, error: restErr } = await client.from('restaurants').select('*').eq('id', profile.restaurant_id).single();
   if (!restErr && restaurant) {
+    myRestaurant = restaurant;
     document.getElementById('sidebarRestName').textContent = restaurant.name + ' · ' + restaurant.city;
     document.getElementById('setRestName').textContent = restaurant.name;
     document.getElementById('setRestCity').textContent = restaurant.city || '—';
