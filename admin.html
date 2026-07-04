@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — ScanFlow</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="logo/Tranparent%20logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Baloo+2:wght@800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F7FB; --card:#FFFFFF;
+  --ink:#0D2539; --ink-soft:#46586B; --muted:#8493A6;
+  --blue:#1783F2; --blue-deep:#0E6BD6; --blue-soft:#E7F1FE;
+  --border:#E2E9F2;
+  --radius:16px;
+  --serif:'Fraunces',Georgia,serif;
+  --sans:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --round:'Baloo 2',var(--sans);
+  --shadow:0 18px 50px -16px rgba(13,37,57,.22);
+  --accent:#1783F2; --accent-soft:#E7F1FE; --accent-tag:ADMIN;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;}
+a{color:inherit;text-decoration:none;}
+.wrap{max-width:900px;margin:0 auto;padding:0 24px;}
+.nav{background:var(--card);border-bottom:1px solid var(--border);}
+.nav-in{display:flex;align-items:center;justify-content:space-between;height:64px;}
+.sf-logo{display:inline-flex;align-items:center;gap:8px;}
+.sf-mark{width:28px;height:28px;flex-shrink:0;}
+.sf-word{font-family:var(--round);font-weight:800;font-size:17px;letter-spacing:-.4px;}
+.sf-word .n{color:var(--ink);} .sf-word .b{color:var(--blue);}
+.role-pill{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.5px;background:var(--accent-soft);color:var(--accent);padding:4px 10px;border-radius:20px;margin-left:8px;}
+.who{display:flex;align-items:center;gap:14px;}
+.who .email{font-size:13px;color:var(--ink-soft);}
+.signout{font-size:13px;font-weight:600;color:#fff;background:var(--ink);padding:9px 16px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;}
+.signout:hover{background:#16293C;}
+
+.main{padding:56px 0;}
+.hero-card{background:var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);padding:40px;text-align:center;}
+.badge{display:inline-block;font-size:32px;margin-bottom:14px;}
+.hero-card h1{font-family:var(--serif);font-weight:600;font-size:26px;margin-bottom:10px;}
+.hero-card p{font-size:14.5px;color:var(--ink-soft);max-width:480px;margin:0 auto;line-height:1.6;}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px;}
+.fact{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:left;}
+.fact .k{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.fact .v{font-size:14px;font-weight:600;}
+.next{margin-top:32px;text-align:left;background:var(--accent-soft);border-radius:14px;padding:18px 20px;}
+.next h3{font-size:14px;margin-bottom:8px;}
+.next ul{padding-left:18px;font-size:13.5px;color:var(--ink-soft);line-height:1.8;}
+@media(max-width:620px){.facts{grid-template-columns:1fr;}.who .email{display:none;}}
+</style>
+</head>
+<body>
+<div class="nav"><div class="wrap nav-in">
+  <a class="sf-logo" href="index.html">
+    <svg class="sf-mark" viewBox="0 0 64 64" aria-hidden="true">
+      <g fill="none" stroke="#1783F2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 H10 Q6 6 6 10 V18"/><path d="M46 6 H54 Q58 6 58 10 V18"/><path d="M58 46 V54 Q58 58 54 58 H46"/></g>
+      <g fill="none" stroke="#0D2539" stroke-width="2.4"><rect x="17" y="13" width="11" height="11" rx="1.5"/><rect x="36" y="13" width="11" height="11" rx="1.5"/></g>
+      <g fill="#0D2539"><rect x="20.5" y="16.5" width="4" height="4"/><rect x="39.5" y="16.5" width="4" height="4"/></g>
+      <path d="M22 49 Q22 38 32 38 Q42 38 42 49 Z" fill="#0D2539"/><rect x="18" y="49.5" width="28" height="3" rx="1.5" fill="#0D2539"/>
+      <g stroke="#1783F2" stroke-width="2.8" stroke-linecap="round"><path d="M6 47 H15"/><path d="M3 52 H13"/><path d="M7 57 H16"/></g>
+    </svg>
+    <span class="sf-word"><span class="n">scan</span><span class="b">flow</span></span><span class="role-pill">ADMIN</span>
+  </a>
+  <div class="who">
+    <span class="email" id="whoEmail"></span>
+    <button class="signout" id="signoutBtn">Sign out</button>
+  </div>
+</div></div>
+
+<div class="main"><div class="wrap">
+  <div class="hero-card">
+    <span class="badge">🛠️</span>
+    <h1>Master admin dashboard — placeholder</h1>
+    <p>Your login and role routing are working. This page confirms it. The real admin dashboard (add restaurants, manage subscriptions, cross-restaurant analytics) gets built next.</p>
+    <div class="facts">
+      <div class="fact"><div class="k">Signed in as</div><div class="v" id="factEmail">—</div></div>
+      <div class="fact"><div class="k">Role</div><div class="v" id="factRole">—</div></div>
+      <div class="fact"><div class="k">Account ID</div><div class="v" id="factId" style="font-family:var(--mono);font-size:11.5px;">—</div></div>
+    </div>
+    <div class="next">
+      <h3>Coming here next</h3>
+      <ul>
+        <li>Add a new restaurant + generate its first owner login</li>
+        <li>Subscription status per restaurant (plan, renewal date, payment status)</li>
+        <li>Cross-restaurant analytics (revenue, active tables, top dishes)</li>
+        <li>Suspend / reactivate a restaurant's access</li>
+      </ul>
+    </div>
+  </div>
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script>
+(async () => {
+  const profile = await scanflowRequireRole('admin');
+  if (!profile) return;
+  document.getElementById('whoEmail').textContent = profile.email;
+  document.getElementById('factEmail').textContent = profile.email;
+  document.getElementById('factRole').textContent = profile.role;
+  document.getElementById('factId').textContent = profile.id;
+})();
+document.getElementById('signoutBtn').addEventListener('click', scanflowSignOut);
+</script>
+</body>
+</html>

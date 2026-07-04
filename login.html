@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — ScanFlow</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="logo/Tranparent%20logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Baloo+2:wght@800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F7FB; --card:#FFFFFF;
+  --ink:#0D2539; --ink-soft:#46586B; --muted:#8493A6;
+  --blue:#1783F2; --blue-deep:#0E6BD6; --blue-soft:#E7F1FE;
+  --red:#D64541; --red-soft:#FDEDEC;
+  --border:#E2E9F2; --grid:#D8E3F1;
+  --radius:16px;
+  --serif:'Fraunces',Georgia,serif;
+  --sans:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --round:'Baloo 2',var(--sans);
+  --shadow:0 18px 50px -16px rgba(13,37,57,.22);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;position:relative;overflow-x:hidden;}
+a{color:inherit;}
+.bg-grid{position:fixed;inset:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:38px 38px;-webkit-mask-image:radial-gradient(90% 60% at 50% 0%,#000 30%,transparent 75%);mask-image:radial-gradient(90% 60% at 50% 0%,#000 30%,transparent 75%);opacity:.55;pointer-events:none;}
+
+.top{position:relative;padding:22px 24px;display:flex;justify-content:center;}
+.sf-logo{display:inline-flex;align-items:center;gap:8px;}
+.sf-mark{width:30px;height:30px;flex-shrink:0;}
+.sf-word{font-family:var(--round);font-weight:800;font-size:18px;letter-spacing:-.4px;}
+.sf-word .n{color:var(--ink);} .sf-word .b{color:var(--blue);}
+
+.wrap{position:relative;display:flex;justify-content:center;padding:24px 20px 60px;}
+.card{width:100%;max-width:400px;background:var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);padding:36px 32px;}
+.card h1{font-family:var(--serif);font-weight:600;font-size:26px;letter-spacing:-.01em;margin-bottom:6px;}
+.card .sub{font-size:13.5px;color:var(--ink-soft);margin-bottom:26px;line-height:1.5;}
+
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;}
+.field input{width:100%;font:inherit;font-size:14.5px;padding:12px 14px;border:1.5px solid var(--border);border-radius:11px;background:var(--bg);color:var(--ink);transition:border-color .15s,background .15s;}
+.field input:focus{outline:none;border-color:var(--blue);background:#fff;}
+.row-between{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.forgot{font-size:12.5px;font-weight:600;color:var(--blue);background:none;border:none;cursor:pointer;font-family:inherit;}
+.forgot:hover{color:var(--blue-deep);}
+
+.btn-submit{width:100%;background:var(--blue);color:#fff;font-weight:600;font-size:15px;padding:13px;border-radius:12px;border:none;cursor:pointer;transition:background .2s,transform .1s;box-shadow:0 8px 20px -6px rgba(23,131,242,.5);}
+.btn-submit:hover{background:var(--blue-deep);}
+.btn-submit:active{transform:scale(.98);}
+.btn-submit:disabled{opacity:.6;cursor:not-allowed;}
+
+.msg{font-size:13px;border-radius:10px;padding:10px 13px;margin-bottom:18px;display:none;line-height:1.5;}
+.msg.show{display:block;}
+.msg.error{background:var(--red-soft);color:var(--red);}
+.msg.info{background:var(--blue-soft);color:var(--blue-deep);}
+
+.divider{text-align:center;font-family:var(--mono);font-size:11px;color:var(--muted);margin:26px 0 18px;position:relative;}
+.footnote{font-size:12.5px;color:var(--ink-soft);text-align:center;line-height:1.6;}
+.footnote a{color:var(--blue);font-weight:600;}
+
+.back{position:relative;text-align:center;margin-top:22px;font-size:13px;}
+.back a{color:var(--ink-soft);font-weight:500;}
+.back a:hover{color:var(--blue);}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+
+<div class="top">
+  <a class="sf-logo" href="index.html">
+    <svg class="sf-mark" viewBox="0 0 64 64" aria-hidden="true">
+      <g fill="none" stroke="#1783F2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 H10 Q6 6 6 10 V18"/><path d="M46 6 H54 Q58 6 58 10 V18"/><path d="M58 46 V54 Q58 58 54 58 H46"/></g>
+      <g fill="none" stroke="#0D2539" stroke-width="2.4"><rect x="17" y="13" width="11" height="11" rx="1.5"/><rect x="36" y="13" width="11" height="11" rx="1.5"/></g>
+      <g fill="#0D2539"><rect x="20.5" y="16.5" width="4" height="4"/><rect x="39.5" y="16.5" width="4" height="4"/><rect x="29.6" y="14" width="2.4" height="2.4"/><rect x="29.6" y="18.4" width="2.4" height="2.4"/><rect x="32" y="20.6" width="2.4" height="2.4"/><rect x="17.5" y="28" width="2.4" height="2.4"/><rect x="21" y="28" width="2.4" height="2.4"/><rect x="24.5" y="29" width="2.4" height="2.4"/><rect x="28" y="27.5" width="2.4" height="2.4"/><rect x="38.5" y="28" width="2.4" height="2.4"/><rect x="42" y="28" width="2.4" height="2.4"/><rect x="45.5" y="29" width="2.4" height="2.4"/></g>
+      <path d="M22 49 Q22 38 32 38 Q42 38 42 49 Z" fill="#0D2539"/><path d="M32 38 V34" stroke="#0D2539" stroke-width="2.4" stroke-linecap="round"/><circle cx="32" cy="33" r="1.8" fill="#0D2539"/>
+      <rect x="18" y="49.5" width="28" height="3" rx="1.5" fill="#0D2539"/>
+      <g stroke="#1783F2" stroke-width="2.8" stroke-linecap="round"><path d="M6 47 H15"/><path d="M3 52 H13"/><path d="M7 57 H16"/></g>
+    </svg>
+    <span class="sf-word"><span class="n">scan</span><span class="b">flow</span></span>
+  </a>
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <h1>Sign in</h1>
+    <p class="sub">One login for everyone. We'll take you straight to your dashboard — admin, owner, or waiter.</p>
+
+    <div class="msg error" id="msgError"></div>
+    <div class="msg info" id="msgInfo"></div>
+
+    <form id="loginForm" novalidate>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" autocomplete="username" required placeholder="you@restaurant.com">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" autocomplete="current-password" required placeholder="••••••••">
+      </div>
+      <div class="row-between">
+        <span></span>
+        <button type="button" class="forgot" id="forgotBtn">Forgot password?</button>
+      </div>
+      <button type="submit" class="btn-submit" id="submitBtn">Sign in</button>
+    </form>
+
+    <div class="divider">— — —</div>
+    <p class="footnote">Owner and waiter logins are created for you, not self-signup.<br>Need access? Message <a href="mailto:Scanfloww@gmail.com">Scanfloww@gmail.com</a></p>
+  </div>
+</div>
+
+<div class="back"><a href="index.html">← Back to scanflow.in</a></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script>
+const form = document.getElementById('loginForm');
+const submitBtn = document.getElementById('submitBtn');
+const emailEl = document.getElementById('email');
+const passwordEl = document.getElementById('password');
+const msgError = document.getElementById('msgError');
+const msgInfo = document.getElementById('msgInfo');
+
+function showError(text){
+  msgInfo.classList.remove('show');
+  msgError.textContent = text;
+  msgError.classList.add('show');
+}
+function showInfo(text){
+  msgError.classList.remove('show');
+  msgInfo.textContent = text;
+  msgInfo.classList.add('show');
+}
+function clearMsgs(){
+  msgError.classList.remove('show');
+  msgInfo.classList.remove('show');
+}
+
+// If already signed in, skip straight to the right dashboard.
+(async () => {
+  if (!scanflowConfigured) return;
+  const profile = await scanflowGetProfile();
+  if (profile) window.location.href = SCANFLOW_ROLE_HOME[profile.role] || 'login.html';
+})();
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearMsgs();
+
+  if (!scanflowConfigured) {
+    showInfo('Supabase isn’t connected yet. Open auth.js and follow the setup steps at the top of the file — see the notes ScanFlow gave you.');
+    return;
+  }
+
+  const email = emailEl.value.trim();
+  const password = passwordEl.value;
+  if (!email || !password) { showError('Enter your email and password.'); return; }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Signing in…';
+
+  const client = getScanflowClient();
+  const { error } = await client.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    showError('Incorrect email or password. Double check and try again.');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Sign in';
+    return;
+  }
+
+  const profile = await scanflowGetProfile();
+  if (!profile || !profile.role) {
+    showError('Your login worked, but no role is set up on your account yet. Contact Scanfloww@gmail.com.');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Sign in';
+    return;
+  }
+
+  window.location.href = SCANFLOW_ROLE_HOME[profile.role] || 'login.html';
+});
+
+document.getElementById('forgotBtn').addEventListener('click', async () => {
+  clearMsgs();
+  if (!scanflowConfigured) { showInfo('Supabase isn’t connected yet — see auth.js.'); return; }
+  const email = emailEl.value.trim();
+  if (!email) { showError('Type your email above first, then tap “Forgot password?”.'); return; }
+  const client = getScanflowClient();
+  const { error } = await client.auth.resetPasswordForEmail(email);
+  if (error) { showError('Couldn’t send a reset email. Try again or contact Scanfloww@gmail.com.'); return; }
+  showInfo('If that email has an account, a password reset link is on its way.');
+});
+</script>
+</body>
+</html>
