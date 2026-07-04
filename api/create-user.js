@@ -50,29 +50,46 @@ module.exports = async function handler(req, res) {
     }
     const callerUser = await whoRes.json();
 
-    // 2. Is the caller actually an admin? Never trust the client for this —
-    //    check the database directly, server-side, every time.
+    // 2. Who is the caller, and what are they allowed to do? Never trust
+    //    the client for this — check the database directly, every time.
+    //    Admins can create an owner or waiter for any restaurant. Owners
+    //    can only create a waiter, and only for their own restaurant —
+    //    we override whatever restaurant_id the client sent for owners,
+    //    so a compromised or buggy client can never assign a waiter to
+    //    someone else's restaurant.
     const profRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${callerUser.id}&select=role`,
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${callerUser.id}&select=role,restaurant_id`,
       { headers: { apikey: SERVICE_ROLE_KEY, Authorization: `Bearer ${SERVICE_ROLE_KEY}` } }
     );
     if (!profRes.ok) {
-      // A failed lookup is NOT the same as "not an admin" — surface the
+      // A failed lookup is NOT the same as "not allowed" — surface the
       // real reason (commonly a missing GRANT on the profiles table)
       // instead of hiding it behind a misleading 403.
       const errBody = await profRes.text();
       console.error('ScanFlow create-user: profile lookup failed', profRes.status, errBody);
-      res.status(500).json({ error: `Could not verify admin status (profile lookup failed: ${errBody}). This is usually a missing database GRANT, not a permissions problem with your account.` });
+      res.status(500).json({ error: `Could not verify your account (profile lookup failed: ${errBody}). This is usually a missing database GRANT, not a permissions problem with your account.` });
       return;
     }
     const profData = await profRes.json();
-    if (!Array.isArray(profData) || !profData.length || profData[0].role !== 'admin') {
-      res.status(403).json({ error: 'Only an admin account can create logins.' });
+    const caller = Array.isArray(profData) && profData[0];
+    if (!caller || (caller.role !== 'admin' && caller.role !== 'owner')) {
+      res.status(403).json({ error: 'Only an admin or restaurant owner can create logins.' });
       return;
     }
 
     // 3. Validate the new-user input.
-    const { email, password, role, restaurant_id, full_name } = req.body || {};
+    const { email, password, full_name } = req.body || {};
+    let { role, restaurant_id } = req.body || {};
+
+    if (caller.role === 'owner') {
+      role = 'waiter';                          // owners may only create waiters
+      restaurant_id = caller.restaurant_id;      // always their own restaurant, ignore client input
+      if (!restaurant_id) {
+        res.status(400).json({ error: 'Your account isn\'t linked to a restaurant yet — contact ScanFlow.' });
+        return;
+      }
+    }
+
     if (!email || !password || !['owner', 'waiter'].includes(role)) {
       res.status(400).json({ error: 'email, password, and a role of owner or waiter are required.' });
       return;
@@ -81,7 +98,7 @@ module.exports = async function handler(req, res) {
       res.status(400).json({ error: 'Password must be at least 8 characters.' });
       return;
     }
-    if ((role === 'owner' || role === 'waiter') && !restaurant_id) {
+    if (!restaurant_id) {
       res.status(400).json({ error: 'Pick which restaurant this login belongs to.' });
       return;
     }
