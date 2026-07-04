@@ -11,93 +11,721 @@
 :root{
   --bg:#F4F7FB; --card:#FFFFFF;
   --ink:#0D2539; --ink-soft:#46586B; --muted:#8493A6;
-  --blue:#1783F2; --border:#E2E9F2;
-  --serif:'Fraunces',Georgia,serif; --sans:'Inter',system-ui,sans-serif;
-  --mono:'JetBrains Mono',monospace; --round:'Baloo 2',var(--sans);
+  --blue:#1783F2; --blue-deep:#0E6BD6; --blue-soft:#E7F1FE;
+  --green:#1E9E5A; --green-soft:#E9F7EF;
+  --red:#D64541; --red-soft:#FDEDEC;
+  --amber:#E8920C; --amber-soft:#FCF1DD;
+  --border:#E2E9F2;
+  --radius:16px;
+  --serif:'Fraunces',Georgia,serif;
+  --sans:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --round:'Baloo 2',var(--sans);
   --shadow:0 18px 50px -16px rgba(13,37,57,.22);
   --accent:#1783F2; --accent-soft:#E7F1FE;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:var(--sans);background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;}
 a{color:inherit;text-decoration:none;}
-.wrap{max-width:900px;margin:0 auto;padding:0 24px;}
-.nav{background:var(--card);border-bottom:1px solid var(--border);}
-.nav-in{display:flex;align-items:center;justify-content:space-between;height:64px;}
+
+.nav{background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:30;}
+.nav-in{display:flex;align-items:center;justify-content:space-between;height:64px;padding:0 20px;}
+.nav-left{display:flex;align-items:center;gap:14px;}
+.hamburger{width:38px;height:38px;border-radius:10px;border:1.5px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hamburger:hover{border-color:var(--blue);}
+.hamburger span{display:block;width:16px;height:2px;background:var(--ink);position:relative;}
+.hamburger span::before,.hamburger span::after{content:'';position:absolute;left:0;width:16px;height:2px;background:var(--ink);}
+.hamburger span::before{top:-5px;} .hamburger span::after{top:5px;}
 .sf-logo{display:inline-flex;align-items:center;gap:8px;}
-.sf-mark{width:28px;height:28px;flex-shrink:0;}
-.sf-word{font-family:var(--round);font-weight:800;font-size:17px;letter-spacing:-.4px;}
+.sf-mark{width:26px;height:26px;flex-shrink:0;}
+.sf-word{font-family:var(--round);font-weight:800;font-size:16px;letter-spacing:-.4px;}
 .sf-word .n{color:var(--ink);} .sf-word .b{color:var(--blue);}
-.role-pill{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.5px;background:var(--accent-soft);color:var(--accent);padding:4px 10px;border-radius:20px;margin-left:8px;}
+.role-pill{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.5px;background:var(--accent-soft);color:var(--accent);padding:3px 9px;border-radius:20px;margin-left:6px;}
 .who{display:flex;align-items:center;gap:14px;}
 .who .email{font-size:13px;color:var(--ink-soft);}
 .signout{font-size:13px;font-weight:600;color:#fff;background:var(--ink);padding:9px 16px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;}
 .signout:hover{background:#16293C;}
-.main{padding:56px 0;}
-.hero-card{background:var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);padding:40px;text-align:center;}
-.badge{display:inline-block;font-size:32px;margin-bottom:14px;}
-.hero-card h1{font-family:var(--serif);font-weight:600;font-size:26px;margin-bottom:10px;}
-.hero-card p{font-size:14.5px;color:var(--ink-soft);max-width:480px;margin:0 auto;line-height:1.6;}
-.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px;}
-.fact{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:left;}
-.fact .k{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
-.fact .v{font-size:14px;font-weight:600;}
-.next{margin-top:32px;text-align:left;background:var(--accent-soft);border-radius:14px;padding:18px 20px;}
-.next h3{font-size:14px;margin-bottom:8px;}
-.next ul{padding-left:18px;font-size:13.5px;color:var(--ink-soft);line-height:1.8;}
-@media(max-width:620px){.facts{grid-template-columns:1fr;}.who .email{display:none;}}
+@media(max-width:560px){.who .email{display:none;}}
+
+.backdrop{position:fixed;inset:0;background:rgba(13,37,57,.35);opacity:0;pointer-events:none;transition:opacity .2s;z-index:35;}
+.backdrop.open{opacity:1;pointer-events:auto;}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:250px;background:var(--ink);color:#fff;transform:translateX(-100%);transition:transform .25s cubic-bezier(.2,.7,.3,1);z-index:40;display:flex;flex-direction:column;padding:20px 14px;}
+.sidebar.open{transform:translateX(0);}
+.sidebar-head{display:flex;align-items:center;justify-content:space-between;padding:6px 8px 20px;}
+.sidebar-head .sf-word .n{color:#fff;}
+.sidebar-close{width:30px;height:30px;border-radius:8px;border:none;background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-size:16px;}
+.side-nav{display:flex;flex-direction:column;gap:3px;}
+.side-link{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;color:#AFC3D8;font-size:14px;font-weight:500;cursor:pointer;border:none;background:none;font-family:inherit;text-align:left;width:100%;}
+.side-link:hover{background:rgba(255,255,255,.06);color:#fff;}
+.side-link.active{background:var(--blue);color:#fff;}
+.side-link .ic{font-size:16px;width:20px;text-align:center;}
+.sidebar-foot{margin-top:auto;padding:12px 8px 4px;font-family:var(--mono);font-size:10.5px;color:#6E85A0;}
+
+.main{padding:36px 0 80px;}
+.wrap{max-width:1020px;margin:0 auto;padding:0 24px;}
+.page-head{margin-bottom:26px;}
+.page-head h1{font-family:var(--serif);font-weight:600;font-size:27px;margin-bottom:6px;}
+.page-head p{font-size:14px;color:var(--ink-soft);}
+
+.view{display:none;}
+.view.active{display:block;}
+
+.msg{font-size:13.5px;border-radius:10px;padding:11px 14px;margin-bottom:20px;display:none;line-height:1.5;}
+.msg.show{display:block;}
+.msg.error{background:var(--red-soft);color:var(--red);}
+.msg.success{background:var(--green-soft);color:var(--green);}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:26px 28px;margin-bottom:24px;box-shadow:var(--shadow);}
+.card h2{font-family:var(--serif);font-weight:600;font-size:19px;margin-bottom:4px;}
+.card .card-sub{font-size:13px;color:var(--ink-soft);margin-bottom:20px;}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-grid.cols-3{grid-template-columns:1fr 1fr 1fr;}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;}
+.field input,.field select,.field textarea{width:100%;font:inherit;font-size:14px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--ink);}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue);background:#fff;}
+.field-full{grid-column:1/-1;}
+.field-hint{font-size:11.5px;color:var(--muted);margin-top:5px;}
+.pw-row{display:flex;gap:8px;}
+.pw-row input{flex:1;font-family:var(--mono);}
+.veg-toggle{display:flex;gap:8px;}
+.veg-opt{flex:1;text-align:center;padding:10px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink-soft);}
+.veg-opt input{display:none;}
+.veg-opt.veg.checked{border-color:var(--green);background:var(--green-soft);color:var(--green);}
+.veg-opt.nonveg.checked{border-color:var(--red);background:var(--red-soft);color:var(--red);}
+
+.btn{font-weight:600;font-size:14px;padding:11px 20px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;transition:background .15s,opacity .15s;}
+.btn-primary{background:var(--blue);color:#fff;}
+.btn-primary:hover{background:var(--blue-deep);}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;}
+.btn-ghost-sm{background:var(--bg);border:1.5px solid var(--border);color:var(--ink-soft);font-size:13px;font-weight:600;padding:0 14px;border-radius:10px;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.btn-ghost-sm:hover{border-color:var(--blue);color:var(--blue);}
+.btn-row{margin-top:18px;}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;}
+th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);padding:0 10px 10px;border-bottom:1px solid var(--border);}
+td{padding:12px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+select.inline-select,input.inline-input{font:inherit;font-size:12.5px;padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--ink);}
+input.inline-input{width:80px;}
+.pill{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.4px;padding:3px 9px;border-radius:20px;text-transform:uppercase;}
+.pill.instock{background:var(--green-soft);color:var(--green);}
+.pill.outstock{background:var(--red-soft);color:var(--red);}
+.veg-dot{width:12px;height:12px;border:1.6px solid;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;vertical-align:-2px;}
+.veg-dot::after{content:'';width:5px;height:5px;border-radius:50%;}
+.veg-dot.v{border-color:#1E9E5A;} .veg-dot.v::after{background:#1E9E5A;}
+.veg-dot.n{border-color:#D64541;} .veg-dot.n::after{background:#D64541;}
+.mini-btn{font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-family:inherit;color:var(--ink-soft);}
+.mini-btn:hover{border-color:var(--red);color:var(--red);}
+.mini-btn.instock-btn:hover{border-color:var(--green);color:var(--green);}
+.empty-row td{text-align:center;color:var(--muted);padding:26px 10px;}
+
+.note{background:var(--accent-soft);border-radius:12px;padding:14px 16px;font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin-top:6px;}
+.note code{background:rgba(255,255,255,.6);padding:1px 5px;border-radius:4px;}
+
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:var(--shadow);}
+.stat-card .num{font-family:var(--mono);font-weight:700;font-size:28px;color:var(--ink);}
+.stat-card .lbl{font-size:12.5px;color:var(--ink-soft);margin-top:4px;}
+.stat-card.blue .num{color:var(--blue);}
+.stat-card.green .num{color:var(--green);}
+.stat-card.red .num{color:var(--red);}
+.bar-row{display:flex;align-items:center;gap:10px;font-size:13px;margin-bottom:10px;}
+.bar-row .bar-label{width:84px;flex-shrink:0;color:var(--ink-soft);}
+.bar-track{flex:1;height:8px;background:var(--bg);border-radius:6px;overflow:hidden;}
+.bar-fill{height:100%;background:var(--blue);border-radius:6px;}
+.bar-row .bar-n{width:26px;text-align:right;font-family:var(--mono);font-weight:600;flex-shrink:0;}
+
+.qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;}
+.qr-card{border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;background:var(--bg);}
+.qr-card img{width:100%;max-width:150px;border-radius:8px;background:#fff;padding:8px;border:1px solid var(--border);}
+.qr-card .tnum{font-family:var(--serif);font-weight:600;font-size:16px;margin:10px 0 8px;}
+.qr-card .qr-actions{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
+
+.result-box{background:var(--bg);border:1.5px dashed var(--border);border-radius:12px;padding:16px;margin-top:16px;font-size:13.5px;line-height:1.8;}
+.result-box .rk{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;}
+.result-box .rv{font-family:var(--mono);font-weight:600;}
+
+@media(max-width:680px){.form-grid,.form-grid.cols-3{grid-template-columns:1fr;}table{font-size:12.5px;}.stat-grid{grid-template-columns:1fr 1fr;}}
 </style>
 </head>
 <body>
-<div class="nav"><div class="wrap nav-in">
-  <a class="sf-logo" href="index.html">
-    <svg class="sf-mark" viewBox="0 0 64 64" aria-hidden="true">
-      <g fill="none" stroke="#1783F2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 H10 Q6 6 6 10 V18"/><path d="M46 6 H54 Q58 6 58 10 V18"/><path d="M58 46 V54 Q58 58 54 58 H46"/></g>
-      <g fill="none" stroke="#0D2539" stroke-width="2.4"><rect x="17" y="13" width="11" height="11" rx="1.5"/><rect x="36" y="13" width="11" height="11" rx="1.5"/></g>
-      <g fill="#0D2539"><rect x="20.5" y="16.5" width="4" height="4"/><rect x="39.5" y="16.5" width="4" height="4"/></g>
-      <path d="M22 49 Q22 38 32 38 Q42 38 42 49 Z" fill="#0D2539"/><rect x="18" y="49.5" width="28" height="3" rx="1.5" fill="#0D2539"/>
-      <g stroke="#1783F2" stroke-width="2.8" stroke-linecap="round"><path d="M6 47 H15"/><path d="M3 52 H13"/><path d="M7 57 H16"/></g>
-    </svg>
-    <span class="sf-word"><span class="n">scan</span><span class="b">flow</span></span><span class="role-pill">OWNER</span>
-  </a>
+
+<div class="nav"><div class="nav-in">
+  <div class="nav-left">
+    <button class="hamburger" id="hamburgerBtn" aria-label="Open menu"><span></span></button>
+    <a class="sf-logo" href="index.html">
+      <svg class="sf-mark" viewBox="0 0 64 64" aria-hidden="true">
+        <g fill="none" stroke="#1783F2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 H10 Q6 6 6 10 V18"/><path d="M46 6 H54 Q58 6 58 10 V18"/><path d="M58 46 V54 Q58 58 54 58 H46"/></g>
+        <g fill="none" stroke="#0D2539" stroke-width="2.4"><rect x="17" y="13" width="11" height="11" rx="1.5"/><rect x="36" y="13" width="11" height="11" rx="1.5"/></g>
+        <g fill="#0D2539"><rect x="20.5" y="16.5" width="4" height="4"/><rect x="39.5" y="16.5" width="4" height="4"/></g>
+        <path d="M22 49 Q22 38 32 38 Q42 38 42 49 Z" fill="#0D2539"/><rect x="18" y="49.5" width="28" height="3" rx="1.5" fill="#0D2539"/>
+        <g stroke="#1783F2" stroke-width="2.8" stroke-linecap="round"><path d="M6 47 H15"/><path d="M3 52 H13"/><path d="M7 57 H16"/></g>
+      </svg>
+      <span class="sf-word"><span class="n">scan</span><span class="b">flow</span></span><span class="role-pill">OWNER</span>
+    </a>
+  </div>
   <div class="who">
     <span class="email" id="whoEmail"></span>
     <button class="signout" id="signoutBtn">Sign out</button>
   </div>
 </div></div>
 
+<div class="backdrop" id="backdrop"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <span class="sf-word"><span class="n">scan</span><span class="b">flow</span></span>
+    <button class="sidebar-close" id="sidebarClose">✕</button>
+  </div>
+  <nav class="side-nav">
+    <button class="side-link active" data-view="dashboard"><span class="ic">🏠</span>Dashboard</button>
+    <button class="side-link" data-view="menu"><span class="ic">🍽️</span>Menu</button>
+    <button class="side-link" data-view="staff"><span class="ic">🧑‍🍳</span>Staff</button>
+    <button class="side-link" data-view="tables"><span class="ic">📋</span>Tables &amp; QR</button>
+    <button class="side-link" data-view="settings"><span class="ic">⚙️</span>Settings</button>
+  </nav>
+  <div class="sidebar-foot" id="sidebarRestName">ScanFlow</div>
+</div>
+
 <div class="main"><div class="wrap">
-  <div class="hero-card">
-    <span class="badge">🍽️</span>
-    <h1>Restaurant owner dashboard — placeholder</h1>
-    <p>Your login and role routing are working. This page confirms it. The real owner dashboard (menu, waiter logins, table QR codes, analytics) gets built next.</p>
-    <div class="facts">
-      <div class="fact"><div class="k">Signed in as</div><div class="v" id="factEmail">—</div></div>
-      <div class="fact"><div class="k">Role</div><div class="v" id="factRole">—</div></div>
-      <div class="fact"><div class="k">Restaurant ID</div><div class="v" id="factRest" style="font-family:var(--mono);font-size:11.5px;">—</div></div>
+
+  <div class="msg error" id="msgError"></div>
+  <div class="msg success" id="msgSuccess"></div>
+
+  <!-- ══ DASHBOARD ══ -->
+  <div class="view active" id="view-dashboard">
+    <div class="page-head">
+      <h1>Dashboard</h1>
+      <p>A quick read on your menu and team.</p>
     </div>
-    <div class="next">
-      <h3>Coming here next</h3>
-      <ul>
-        <li>Add / edit menu items, prices, and veg-nonveg tags</li>
-        <li>Toggle a dish in or out of stock</li>
-        <li>Add or remove waiter logins</li>
-        <li>Generate table QR codes</li>
-        <li>Sales analytics — top dishes, busiest tables, daily totals</li>
-      </ul>
+    <div class="stat-grid">
+      <div class="stat-card blue"><div class="num" id="statMenu">—</div><div class="lbl">Menu items</div></div>
+      <div class="stat-card green"><div class="num" id="statInStock">—</div><div class="lbl">In stock</div></div>
+      <div class="stat-card red"><div class="num" id="statOutStock">—</div><div class="lbl">Out of stock</div></div>
+      <div class="stat-card"><div class="num" id="statWaiters">—</div><div class="lbl">Waiters</div></div>
+    </div>
+    <div class="card">
+      <h2>Menu by category</h2>
+      <p class="card-sub">Where your menu is concentrated.</p>
+      <div id="categoryBars"><p style="color:var(--muted);font-size:13.5px;">Loading…</p></div>
+    </div>
+    <div class="note">Order and sales analytics will appear here once the waiter order tab and customer ordering page are live — no orders exist yet to report on.</div>
+  </div>
+
+  <!-- ══ MENU ══ -->
+  <div class="view" id="view-menu">
+    <div class="page-head">
+      <h1>Menu</h1>
+      <p>Add dishes, set prices, and toggle what's in stock — changes are live immediately once the customer menu page ships.</p>
+    </div>
+
+    <div class="card">
+      <h2>Add a dish</h2>
+      <form id="addItemForm">
+        <div class="form-grid">
+          <div class="field field-full">
+            <label for="iName">Dish name</label>
+            <input type="text" id="iName" required placeholder="Butter Chicken">
+          </div>
+          <div class="field field-full">
+            <label for="iDesc">Description (optional)</label>
+            <input type="text" id="iDesc" placeholder="Creamy tomato gravy, served with rice or roti">
+          </div>
+          <div class="field">
+            <label for="iPrice">Price (₹)</label>
+            <input type="number" id="iPrice" required min="0" step="1" placeholder="280">
+          </div>
+          <div class="field">
+            <label for="iCategory">Category</label>
+            <input type="text" id="iCategory" value="Mains" list="categoryList" placeholder="Mains">
+            <datalist id="categoryList">
+              <option value="Starters"><option value="Mains"><option value="Breads">
+              <option value="Rice & Biryani"><option value="Desserts"><option value="Beverages">
+            </datalist>
+          </div>
+          <div class="field field-full">
+            <label>Veg / Non-veg</label>
+            <div class="veg-toggle">
+              <label class="veg-opt veg checked"><input type="radio" name="iVeg" value="veg" checked>🟢 Veg</label>
+              <label class="veg-opt nonveg"><input type="radio" name="iVeg" value="nonveg">🔴 Non-veg</label>
+            </div>
+          </div>
+        </div>
+        <div class="btn-row"><button type="submit" class="btn btn-primary" id="addItemBtn">Add dish</button></div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Your menu</h2>
+      <table>
+        <thead><tr><th>Dish</th><th></th><th>Category</th><th>Price</th><th>Status</th><th></th></tr></thead>
+        <tbody id="menuRows"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody>
+      </table>
     </div>
   </div>
+
+  <!-- ══ STAFF ══ -->
+  <div class="view" id="view-staff">
+    <div class="page-head">
+      <h1>Staff</h1>
+      <p>Create a waiter login for your restaurant, or remove one who's left.</p>
+    </div>
+
+    <div class="card">
+      <h2>Add a waiter</h2>
+      <p class="card-sub">Share the email + password shown afterward with them directly.</p>
+      <form id="addWaiterForm">
+        <div class="form-grid">
+          <div class="field">
+            <label for="wName">Full name</label>
+            <input type="text" id="wName" placeholder="Ramesh Das">
+          </div>
+          <div class="field">
+            <label for="wEmail">Email</label>
+            <input type="email" id="wEmail" required placeholder="ramesh@example.com">
+          </div>
+          <div class="field field-full">
+            <label for="wPassword">Temporary password</label>
+            <div class="pw-row">
+              <input type="text" id="wPassword" required minlength="8">
+              <button type="button" class="btn-ghost-sm" id="genPwBtn">Generate</button>
+              <button type="button" class="btn-ghost-sm" id="copyPwBtn">Copy</button>
+            </div>
+            <p class="field-hint">Auto-filled with a random password — feel free to overwrite it. At least 8 characters.</p>
+          </div>
+        </div>
+        <div class="btn-row"><button type="submit" class="btn btn-primary" id="addWaiterBtn">Create waiter login</button></div>
+      </form>
+      <div class="result-box" id="waiterResult" style="display:none;"></div>
+    </div>
+
+    <div class="card">
+      <h2>Your waiters</h2>
+      <table>
+        <thead><tr><th>Name</th><th>Added</th><th></th></tr></thead>
+        <tbody id="waiterRows"><tr class="empty-row"><td colspan="3">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ TABLES & QR ══ -->
+  <div class="view" id="view-tables">
+    <div class="page-head">
+      <h1>Tables &amp; QR codes</h1>
+      <p>Add a table and get its QR code — customers scan this to open your menu.</p>
+    </div>
+    <div class="note">The customer-facing ordering page isn't live yet, so these QR codes will 404 for now. Set tables up here ahead of time; the codes will start working the moment that page ships — no need to regenerate them.</div>
+    <div class="card">
+      <h2>Add a table</h2>
+      <form id="addTableForm">
+        <div class="form-grid">
+          <div class="field">
+            <label for="tNumber">Table number / name</label>
+            <input type="text" id="tNumber" required placeholder="e.g. 4, or Patio-2">
+          </div>
+        </div>
+        <div class="btn-row"><button type="submit" class="btn btn-primary" id="addTableBtn">Add table</button></div>
+      </form>
+    </div>
+    <div class="card">
+      <h2>Your tables</h2>
+      <div class="qr-grid" id="tableGrid"><p style="color:var(--muted);font-size:13.5px;">Loading…</p></div>
+    </div>
+  </div>
+
+  <!-- ══ SETTINGS ══ -->
+  <div class="view" id="view-settings">
+    <div class="page-head">
+      <h1>Settings</h1>
+      <p>Your account and restaurant details.</p>
+    </div>
+    <div class="card">
+      <h2>Your account</h2>
+      <table>
+        <tbody>
+          <tr><td style="color:var(--ink-soft);width:160px;">Email</td><td id="setEmail" style="font-weight:600;">—</td></tr>
+          <tr><td style="color:var(--ink-soft);">Role</td><td id="setRole" style="font-weight:600;">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Your restaurant</h2>
+      <table>
+        <tbody>
+          <tr><td style="color:var(--ink-soft);width:160px;">Name</td><td id="setRestName" style="font-weight:600;">—</td></tr>
+          <tr><td style="color:var(--ink-soft);">City</td><td id="setRestCity">—</td></tr>
+          <tr><td style="color:var(--ink-soft);">Plan</td><td id="setRestPlan">—</td></tr>
+          <tr><td style="color:var(--ink-soft);">Status</td><td id="setRestStatus">—</td></tr>
+        </tbody>
+      </table>
+      <p class="field-hint" style="margin-top:12px;">Plan changes and billing are managed by ScanFlow — contact <a href="mailto:Scanfloww@gmail.com" style="color:var(--blue);font-weight:600;">Scanfloww@gmail.com</a> to upgrade or ask a question.</p>
+    </div>
+  </div>
+
 </div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 <script>
+let client;
+let myProfile;
+let menuCache = [];
+let tableCache = [];
+
+/* ── Sidebar / view switching ── */
+const sidebar = document.getElementById('sidebar');
+const backdrop = document.getElementById('backdrop');
+function openSidebar(){ sidebar.classList.add('open'); backdrop.classList.add('open'); }
+function closeSidebar(){ sidebar.classList.remove('open'); backdrop.classList.remove('open'); }
+document.getElementById('hamburgerBtn').addEventListener('click', openSidebar);
+document.getElementById('sidebarClose').addEventListener('click', closeSidebar);
+backdrop.addEventListener('click', closeSidebar);
+document.querySelectorAll('.side-link').forEach(link => {
+  link.addEventListener('click', () => {
+    document.querySelectorAll('.side-link').forEach(l => l.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    link.classList.add('active');
+    document.getElementById('view-' + link.dataset.view).classList.add('active');
+    closeSidebar();
+    clearMsgs();
+  });
+});
+
+/* ── Shared helpers ── */
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str == null ? '' : String(str);
+  return d.innerHTML;
+}
+function showError(text){
+  document.getElementById('msgSuccess').classList.remove('show');
+  const el = document.getElementById('msgError');
+  el.textContent = text; el.classList.add('show');
+  el.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function showSuccess(text){
+  document.getElementById('msgError').classList.remove('show');
+  const el = document.getElementById('msgSuccess');
+  el.textContent = text; el.classList.add('show');
+  el.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function clearMsgs(){
+  document.getElementById('msgError').classList.remove('show');
+  document.getElementById('msgSuccess').classList.remove('show');
+}
+function generatePassword(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#%';
+  let out = '';
+  const arr = new Uint32Array(14);
+  crypto.getRandomValues(arr);
+  for (let i = 0; i < 14; i++) out += chars[arr[i] % chars.length];
+  return out;
+}
+
+/* ── Veg/non-veg toggle ── */
+document.querySelectorAll('input[name="iVeg"]').forEach(r => {
+  r.addEventListener('change', () => {
+    document.querySelectorAll('.veg-opt').forEach(o => o.classList.remove('checked'));
+    r.closest('.veg-opt').classList.add('checked');
+  });
+});
+
+/* ── Menu ── */
+async function loadMenu(){
+  const { data, error } = await client.from('menu_items').select('*').eq('restaurant_id', myProfile.restaurant_id).order('category').order('name');
+  const tbody = document.getElementById('menuRows');
+  if (error) {
+    console.error('ScanFlow: could not load menu', error);
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Couldn\'t load your menu — check the console for details.</td></tr>';
+    return;
+  }
+  menuCache = data || [];
+  renderMenuTable();
+  renderDashboardStats();
+}
+
+function renderMenuTable(){
+  const tbody = document.getElementById('menuRows');
+  if (!menuCache.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No dishes yet — add your first one above.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = menuCache.map(item => `
+    <tr data-id="${item.id}">
+      <td><strong>${escapeHtml(item.name)}</strong>${item.description ? `<br><span style="color:var(--muted);font-size:12px;">${escapeHtml(item.description)}</span>` : ''}</td>
+      <td><span class="veg-dot ${item.is_veg ? 'v' : 'n'}"></span></td>
+      <td>${escapeHtml(item.category || '—')}</td>
+      <td>₹<input type="number" class="inline-input price-input" data-id="${item.id}" value="${item.price}" min="0" step="1"></td>
+      <td><span class="pill ${item.in_stock ? 'instock' : 'outstock'}">${item.in_stock ? 'In stock' : 'Out of stock'}</span></td>
+      <td>
+        <button class="mini-btn stock-toggle ${item.in_stock ? '' : 'instock-btn'}" data-id="${item.id}" data-instock="${item.in_stock}">${item.in_stock ? 'Mark out' : 'Mark in'}</button>
+        <button class="mini-btn delete-item" data-id="${item.id}">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+
+  document.querySelectorAll('.price-input').forEach(inp => {
+    inp.addEventListener('change', async () => {
+      clearMsgs();
+      const price = parseFloat(inp.value);
+      if (isNaN(price) || price < 0) { showError('Enter a valid price.'); loadMenu(); return; }
+      const { error } = await client.from('menu_items').update({ price }).eq('id', inp.dataset.id);
+      if (error) { console.error(error); showError('Could not update the price.'); return; }
+      showSuccess('Price updated.');
+      loadMenu();
+    });
+  });
+
+  document.querySelectorAll('.stock-toggle').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      clearMsgs();
+      const newVal = btn.dataset.instock !== 'true';
+      const { error } = await client.from('menu_items').update({ in_stock: newVal }).eq('id', btn.dataset.id);
+      if (error) { console.error(error); showError('Could not update stock status.'); return; }
+      loadMenu();
+    });
+  });
+
+  document.querySelectorAll('.delete-item').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      clearMsgs();
+      const row = btn.closest('tr');
+      const name = row.querySelector('td strong').textContent;
+      if (!confirm(`Remove "${name}" from your menu?`)) return;
+      const { error } = await client.from('menu_items').delete().eq('id', btn.dataset.id);
+      if (error) { console.error(error); showError('Could not delete this dish.'); return; }
+      showSuccess(`"${name}" removed.`);
+      loadMenu();
+    });
+  });
+}
+
+document.getElementById('addItemForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearMsgs();
+  const btn = document.getElementById('addItemBtn');
+  const name = document.getElementById('iName').value.trim();
+  const description = document.getElementById('iDesc').value.trim();
+  const price = parseFloat(document.getElementById('iPrice').value);
+  const category = document.getElementById('iCategory').value.trim() || 'Mains';
+  const is_veg = document.querySelector('input[name="iVeg"]:checked').value === 'veg';
+
+  if (!name || isNaN(price) || price < 0) { showError('Dish name and a valid price are required.'); return; }
+
+  btn.disabled = true; btn.textContent = 'Adding…';
+  const { error } = await client.from('menu_items').insert({
+    restaurant_id: myProfile.restaurant_id, name, description: description || null, price, category, is_veg, in_stock: true
+  });
+  btn.disabled = false; btn.textContent = 'Add dish';
+
+  if (error) { console.error('ScanFlow: could not add dish', error); showError('Could not add the dish. Check the console for details.'); return; }
+  showSuccess(`"${name}" added to your menu.`);
+  document.getElementById('addItemForm').reset();
+  document.getElementById('iCategory').value = 'Mains';
+  document.querySelectorAll('.veg-opt').forEach(o => o.classList.remove('checked'));
+  document.querySelector('.veg-opt.veg').classList.add('checked');
+  loadMenu();
+});
+
+/* ── Staff ── */
+async function loadWaiters(){
+  const { data, error } = await client.from('profiles').select('id, full_name, created_at').eq('restaurant_id', myProfile.restaurant_id).eq('role', 'waiter').order('created_at', { ascending: false });
+  const tbody = document.getElementById('waiterRows');
+  if (error) {
+    console.error('ScanFlow: could not load waiters', error);
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="3">Couldn\'t load your staff list.</td></tr>';
+    document.getElementById('statWaiters').textContent = '—';
+    return;
+  }
+  document.getElementById('statWaiters').textContent = data.length;
+  if (!data.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="3">No waiters yet — add your first one above.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(w => `
+    <tr data-id="${w.id}">
+      <td><strong>${escapeHtml(w.full_name || '(no name given)')}</strong></td>
+      <td>${new Date(w.created_at).toLocaleDateString('en-IN')}</td>
+      <td><button class="mini-btn remove-waiter" data-id="${w.id}">Remove access</button></td>
+    </tr>
+  `).join('');
+
+  document.querySelectorAll('.remove-waiter').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      clearMsgs();
+      const row = btn.closest('tr');
+      const name = row.querySelector('td strong').textContent;
+      if (!confirm(`Remove ${name}'s access? They won't be able to log in anymore.`)) return;
+      const { error } = await client.from('profiles').delete().eq('id', btn.dataset.id);
+      if (error) { console.error(error); showError('Could not remove this login. Check the console for details.'); return; }
+      showSuccess(`${name}'s access has been removed.`);
+      loadWaiters();
+    });
+  });
+}
+
+document.getElementById('wPassword').value = generatePassword();
+document.getElementById('genPwBtn').addEventListener('click', () => { document.getElementById('wPassword').value = generatePassword(); });
+document.getElementById('copyPwBtn').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(document.getElementById('wPassword').value); showSuccess('Password copied.'); }
+  catch { showError('Could not copy — select and copy manually.'); }
+});
+
+document.getElementById('addWaiterForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearMsgs();
+  document.getElementById('waiterResult').style.display = 'none';
+  const full_name = document.getElementById('wName').value.trim();
+  const email = document.getElementById('wEmail').value.trim();
+  const password = document.getElementById('wPassword').value;
+  if (password.length < 8) { showError('Password must be at least 8 characters.'); return; }
+
+  const btn = document.getElementById('addWaiterBtn');
+  btn.disabled = true; btn.textContent = 'Creating…';
+  try {
+    const { data: { session } } = await client.auth.getSession();
+    const resp = await fetch('/api/create-user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ email, password, full_name })
+      // role + restaurant_id are intentionally omitted — the server
+      // forces role='waiter' and your own restaurant for owner callers.
+    });
+    const result = await resp.json();
+    if (!resp.ok) { showError(result.error || 'Could not create the login.'); return; }
+
+    showSuccess(`Waiter login created for ${email}.`);
+    const box = document.getElementById('waiterResult');
+    box.style.display = 'block';
+    box.innerHTML = `
+      <div><span class="rk">Email</span><br><span class="rv">${escapeHtml(email)}</span></div>
+      <div style="margin-top:8px;"><span class="rk">Password</span><br><span class="rv">${escapeHtml(password)}</span></div>
+      <p style="margin-top:10px;color:var(--ink-soft);font-family:var(--sans);">Share these with them directly. They can sign in at login.html right away.</p>
+    `;
+    document.getElementById('addWaiterForm').reset();
+    document.getElementById('wPassword').value = generatePassword();
+    loadWaiters();
+  } catch (err) {
+    console.error('ScanFlow: create waiter request failed', err);
+    showError('Could not reach the server — try again in a moment.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create waiter login';
+  }
+});
+
+/* ── Tables & QR ── */
+async function loadTables(){
+  const { data, error } = await client.from('restaurant_tables').select('*').eq('restaurant_id', myProfile.restaurant_id).order('created_at');
+  const grid = document.getElementById('tableGrid');
+  if (error) {
+    console.error('ScanFlow: could not load tables', error);
+    grid.innerHTML = '<p style="color:var(--muted);font-size:13.5px;">Couldn\'t load your tables — check the console for details.</p>';
+    return;
+  }
+  tableCache = data || [];
+  if (!tableCache.length) {
+    grid.innerHTML = '<p style="color:var(--muted);font-size:13.5px;">No tables yet — add your first one above.</p>';
+    return;
+  }
+  grid.innerHTML = tableCache.map(t => {
+    const menuUrl = `${window.location.origin}/menu.html?t=${t.qr_token}`;
+    const qrImg = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(menuUrl)}`;
+    return `
+      <div class="qr-card">
+        <img src="${qrImg}" alt="QR code for table ${escapeHtml(t.table_number)}" loading="lazy">
+        <div class="tnum">Table ${escapeHtml(t.table_number)}</div>
+        <div class="qr-actions">
+          <button class="btn-ghost-sm copy-link" data-url="${escapeHtml(menuUrl)}">Copy link</button>
+          <button class="mini-btn delete-table" data-id="${t.id}">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.querySelectorAll('.copy-link').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(btn.dataset.url); showSuccess('Link copied.'); }
+      catch { showError('Could not copy — select and copy manually.'); }
+    });
+  });
+  document.querySelectorAll('.delete-table').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      clearMsgs();
+      if (!confirm('Delete this table and its QR code?')) return;
+      const { error } = await client.from('restaurant_tables').delete().eq('id', btn.dataset.id);
+      if (error) { console.error(error); showError('Could not delete this table.'); return; }
+      loadTables();
+    });
+  });
+}
+
+document.getElementById('addTableForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearMsgs();
+  const btn = document.getElementById('addTableBtn');
+  const table_number = document.getElementById('tNumber').value.trim();
+  if (!table_number) { showError('Enter a table number or name.'); return; }
+
+  btn.disabled = true; btn.textContent = 'Adding…';
+  const { error } = await client.from('restaurant_tables').insert({ restaurant_id: myProfile.restaurant_id, table_number });
+  btn.disabled = false; btn.textContent = 'Add table';
+
+  if (error) {
+    console.error('ScanFlow: could not add table', error);
+    if (error.code === '23505') showError(`Table "${table_number}" already exists.`);
+    else showError('Could not add the table. Check the console for details.');
+    return;
+  }
+  showSuccess(`Table "${table_number}" added.`);
+  document.getElementById('addTableForm').reset();
+  loadTables();
+});
+
+/* ── Dashboard stats ── */
+function renderDashboardStats(){
+  const total = menuCache.length;
+  const inStock = menuCache.filter(m => m.in_stock).length;
+  document.getElementById('statMenu').textContent = total;
+  document.getElementById('statInStock').textContent = inStock;
+  document.getElementById('statOutStock').textContent = total - inStock;
+
+  const categories = [...new Set(menuCache.map(m => m.category || 'Mains'))];
+  const max = Math.max(1, ...categories.map(c => menuCache.filter(m => (m.category || 'Mains') === c).length));
+  document.getElementById('categoryBars').innerHTML = categories.length ? categories.map(c => {
+    const n = menuCache.filter(m => (m.category || 'Mains') === c).length;
+    const pct = Math.round((n / max) * 100);
+    return `<div class="bar-row"><span class="bar-label">${escapeHtml(c)}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-n">${n}</span></div>`;
+  }).join('') : '<p style="color:var(--muted);font-size:13.5px;">Add a dish to see this fill in.</p>';
+}
+
+/* ── Boot ── */
 (async () => {
   const profile = await scanflowRequireRole('owner');
   if (!profile) return;
+  myProfile = profile;
+  client = getScanflowClient();
+
   document.getElementById('whoEmail').textContent = profile.email;
-  document.getElementById('factEmail').textContent = profile.email;
-  document.getElementById('factRole').textContent = profile.role;
-  document.getElementById('factRest').textContent = profile.restaurant_id || '— not linked yet —';
+  document.getElementById('setEmail').textContent = profile.email;
+  document.getElementById('setRole').textContent = profile.role;
+
+  if (!profile.restaurant_id) {
+    showError('Your account isn\'t linked to a restaurant yet — contact Scanfloww@gmail.com.');
+    return;
+  }
+
+  const { data: restaurant, error: restErr } = await client.from('restaurants').select('*').eq('id', profile.restaurant_id).single();
+  if (!restErr && restaurant) {
+    document.getElementById('sidebarRestName').textContent = restaurant.name + ' · ' + restaurant.city;
+    document.getElementById('setRestName').textContent = restaurant.name;
+    document.getElementById('setRestCity').textContent = restaurant.city || '—';
+    document.getElementById('setRestPlan').textContent = restaurant.plan;
+    document.getElementById('setRestStatus').textContent = restaurant.status;
+  }
+
+  loadMenu();
+  loadWaiters();
+  loadTables();
 })();
 document.getElementById('signoutBtn').addEventListener('click', scanflowSignOut);
 </script>
