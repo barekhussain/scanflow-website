@@ -27,23 +27,51 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:var(--sans);background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;}
 a{color:inherit;text-decoration:none;}
-.wrap{max-width:980px;margin:0 auto;padding:0 24px;}
-.nav{background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;}
-.nav-in{display:flex;align-items:center;justify-content:space-between;height:64px;}
+
+/* ── Topbar ── */
+.nav{background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:30;}
+.nav-in{display:flex;align-items:center;justify-content:space-between;height:64px;padding:0 20px;}
+.nav-left{display:flex;align-items:center;gap:14px;}
+.hamburger{width:38px;height:38px;border-radius:10px;border:1.5px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hamburger:hover{border-color:var(--blue);}
+.hamburger span{display:block;width:16px;height:2px;background:var(--ink);position:relative;}
+.hamburger span::before,.hamburger span::after{content:'';position:absolute;left:0;width:16px;height:2px;background:var(--ink);}
+.hamburger span::before{top:-5px;} .hamburger span::after{top:5px;}
 .sf-logo{display:inline-flex;align-items:center;gap:8px;}
-.sf-mark{width:28px;height:28px;flex-shrink:0;}
-.sf-word{font-family:var(--round);font-weight:800;font-size:17px;letter-spacing:-.4px;}
+.sf-mark{width:26px;height:26px;flex-shrink:0;}
+.sf-word{font-family:var(--round);font-weight:800;font-size:16px;letter-spacing:-.4px;}
 .sf-word .n{color:var(--ink);} .sf-word .b{color:var(--blue);}
-.role-pill{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.5px;background:var(--accent-soft);color:var(--accent);padding:4px 10px;border-radius:20px;margin-left:8px;}
+.role-pill{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.5px;background:var(--accent-soft);color:var(--accent);padding:3px 9px;border-radius:20px;margin-left:6px;}
 .who{display:flex;align-items:center;gap:14px;}
 .who .email{font-size:13px;color:var(--ink-soft);}
 .signout{font-size:13px;font-weight:600;color:#fff;background:var(--ink);padding:9px 16px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;}
 .signout:hover{background:#16293C;}
+@media(max-width:560px){.who .email{display:none;}}
 
-.main{padding:40px 0 80px;}
-.page-head{margin-bottom:28px;}
-.page-head h1{font-family:var(--serif);font-weight:600;font-size:28px;margin-bottom:6px;}
+/* ── Sidebar drawer ── */
+.backdrop{position:fixed;inset:0;background:rgba(13,37,57,.35);opacity:0;pointer-events:none;transition:opacity .2s;z-index:35;}
+.backdrop.open{opacity:1;pointer-events:auto;}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:250px;background:var(--ink);color:#fff;transform:translateX(-100%);transition:transform .25s cubic-bezier(.2,.7,.3,1);z-index:40;display:flex;flex-direction:column;padding:20px 14px;}
+.sidebar.open{transform:translateX(0);}
+.sidebar-head{display:flex;align-items:center;justify-content:space-between;padding:6px 8px 20px;}
+.sidebar-head .sf-word .n{color:#fff;}
+.sidebar-close{width:30px;height:30px;border-radius:8px;border:none;background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-size:16px;}
+.side-nav{display:flex;flex-direction:column;gap:3px;}
+.side-link{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;color:#AFC3D8;font-size:14px;font-weight:500;cursor:pointer;border:none;background:none;font-family:inherit;text-align:left;width:100%;}
+.side-link:hover{background:rgba(255,255,255,.06);color:#fff;}
+.side-link.active{background:var(--blue);color:#fff;}
+.side-link .ic{font-size:16px;width:20px;text-align:center;}
+.sidebar-foot{margin-top:auto;padding:12px 8px 4px;font-family:var(--mono);font-size:10.5px;color:#6E85A0;}
+
+/* ── Content ── */
+.main{padding:36px 0 80px;}
+.wrap{max-width:1020px;margin:0 auto;padding:0 24px;}
+.page-head{margin-bottom:26px;}
+.page-head h1{font-family:var(--serif);font-weight:600;font-size:27px;margin-bottom:6px;}
 .page-head p{font-size:14px;color:var(--ink-soft);}
+
+.view{display:none;}
+.view.active{display:block;}
 
 .msg{font-size:13.5px;border-radius:10px;padding:11px 14px;margin-bottom:20px;display:none;line-height:1.5;}
 .msg.show{display:block;}
@@ -61,11 +89,16 @@ a{color:inherit;text-decoration:none;}
 .field input,.field select{width:100%;font:inherit;font-size:14px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--ink);}
 .field input:focus,.field select:focus{outline:none;border-color:var(--blue);background:#fff;}
 .field-full{grid-column:1/-1;}
+.field-hint{font-size:11.5px;color:var(--muted);margin-top:5px;}
+.pw-row{display:flex;gap:8px;}
+.pw-row input{flex:1;font-family:var(--mono);}
 
 .btn{font-weight:600;font-size:14px;padding:11px 20px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;transition:background .15s,opacity .15s;}
 .btn-primary{background:var(--blue);color:#fff;}
 .btn-primary:hover{background:var(--blue-deep);}
 .btn-primary:disabled{opacity:.6;cursor:not-allowed;}
+.btn-ghost-sm{background:var(--bg);border:1.5px solid var(--border);color:var(--ink-soft);font-size:13px;font-weight:600;padding:0 14px;border-radius:10px;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.btn-ghost-sm:hover{border-color:var(--blue);color:var(--blue);}
 .btn-row{margin-top:18px;}
 
 table{width:100%;border-collapse:collapse;font-size:13.5px;}
@@ -85,103 +118,236 @@ select.inline-select{font:inherit;font-size:12.5px;padding:6px 8px;border:1.5px 
 
 .note{background:var(--accent-soft);border-radius:12px;padding:14px 16px;font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin-top:6px;}
 .note code{background:rgba(255,255,255,.6);padding:1px 5px;border-radius:4px;}
-@media(max-width:680px){.form-grid,.form-grid.cols-3{grid-template-columns:1fr;}table{font-size:12.5px;}th:nth-child(3),td:nth-child(3){display:none;}}
+
+/* Dashboard stat cards */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:var(--shadow);}
+.stat-card .num{font-family:var(--mono);font-weight:700;font-size:28px;color:var(--ink);}
+.stat-card .lbl{font-size:12.5px;color:var(--ink-soft);margin-top:4px;}
+.stat-card.blue .num{color:var(--blue);}
+.stat-card.green .num{color:var(--green);}
+.stat-card.red .num{color:var(--red);}
+.bar-row{display:flex;align-items:center;gap:10px;font-size:13px;margin-bottom:10px;}
+.bar-row .bar-label{width:64px;flex-shrink:0;color:var(--ink-soft);}
+.bar-track{flex:1;height:8px;background:var(--bg);border-radius:6px;overflow:hidden;}
+.bar-fill{height:100%;background:var(--blue);border-radius:6px;}
+.bar-row .bar-n{width:26px;text-align:right;font-family:var(--mono);font-weight:600;flex-shrink:0;}
+
+.status-check{display:flex;align-items:center;gap:10px;font-size:13.5px;}
+.status-dot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+.status-dot.ok{background:var(--green);} .status-dot.bad{background:var(--red);}
+
+.result-box{background:var(--bg);border:1.5px dashed var(--border);border-radius:12px;padding:16px;margin-top:16px;font-size:13.5px;line-height:1.8;}
+.result-box .rk{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;}
+.result-box .rv{font-family:var(--mono);font-weight:600;}
+
+@media(max-width:680px){.form-grid,.form-grid.cols-3{grid-template-columns:1fr;}table{font-size:12.5px;}th:nth-child(3),td:nth-child(3){display:none;}.stat-grid{grid-template-columns:1fr 1fr;}}
 </style>
 </head>
 <body>
-<div class="nav"><div class="wrap nav-in">
-  <a class="sf-logo" href="index.html">
-    <svg class="sf-mark" viewBox="0 0 64 64" aria-hidden="true">
-      <g fill="none" stroke="#1783F2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 H10 Q6 6 6 10 V18"/><path d="M46 6 H54 Q58 6 58 10 V18"/><path d="M58 46 V54 Q58 58 54 58 H46"/></g>
-      <g fill="none" stroke="#0D2539" stroke-width="2.4"><rect x="17" y="13" width="11" height="11" rx="1.5"/><rect x="36" y="13" width="11" height="11" rx="1.5"/></g>
-      <g fill="#0D2539"><rect x="20.5" y="16.5" width="4" height="4"/><rect x="39.5" y="16.5" width="4" height="4"/></g>
-      <path d="M22 49 Q22 38 32 38 Q42 38 42 49 Z" fill="#0D2539"/><rect x="18" y="49.5" width="28" height="3" rx="1.5" fill="#0D2539"/>
-      <g stroke="#1783F2" stroke-width="2.8" stroke-linecap="round"><path d="M6 47 H15"/><path d="M3 52 H13"/><path d="M7 57 H16"/></g>
-    </svg>
-    <span class="sf-word"><span class="n">scan</span><span class="b">flow</span></span><span class="role-pill">ADMIN</span>
-  </a>
+
+<div class="nav"><div class="nav-in">
+  <div class="nav-left">
+    <button class="hamburger" id="hamburgerBtn" aria-label="Open menu"><span></span></button>
+    <a class="sf-logo" href="index.html">
+      <svg class="sf-mark" viewBox="0 0 64 64" aria-hidden="true">
+        <g fill="none" stroke="#1783F2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 H10 Q6 6 6 10 V18"/><path d="M46 6 H54 Q58 6 58 10 V18"/><path d="M58 46 V54 Q58 58 54 58 H46"/></g>
+        <g fill="none" stroke="#0D2539" stroke-width="2.4"><rect x="17" y="13" width="11" height="11" rx="1.5"/><rect x="36" y="13" width="11" height="11" rx="1.5"/></g>
+        <g fill="#0D2539"><rect x="20.5" y="16.5" width="4" height="4"/><rect x="39.5" y="16.5" width="4" height="4"/></g>
+        <path d="M22 49 Q22 38 32 38 Q42 38 42 49 Z" fill="#0D2539"/><rect x="18" y="49.5" width="28" height="3" rx="1.5" fill="#0D2539"/>
+        <g stroke="#1783F2" stroke-width="2.8" stroke-linecap="round"><path d="M6 47 H15"/><path d="M3 52 H13"/><path d="M7 57 H16"/></g>
+      </svg>
+      <span class="sf-word"><span class="n">scan</span><span class="b">flow</span></span><span class="role-pill">ADMIN</span>
+    </a>
+  </div>
   <div class="who">
     <span class="email" id="whoEmail"></span>
     <button class="signout" id="signoutBtn">Sign out</button>
   </div>
 </div></div>
 
-<div class="main"><div class="wrap">
-  <div class="page-head">
-    <h1>Restaurants</h1>
-    <p>Add restaurants, manage their plan and status, and link a Supabase login to one as its owner or waiter.</p>
+<div class="backdrop" id="backdrop"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <span class="sf-word"><span class="n">scan</span><span class="b">flow</span></span>
+    <button class="sidebar-close" id="sidebarClose">✕</button>
   </div>
+  <nav class="side-nav">
+    <button class="side-link active" data-view="dashboard"><span class="ic">🏠</span>Dashboard</button>
+    <button class="side-link" data-view="restaurants"><span class="ic">🍽️</span>Restaurants</button>
+    <button class="side-link" data-view="adduser"><span class="ic">➕</span>Add User</button>
+    <button class="side-link" data-view="settings"><span class="ic">⚙️</span>Settings</button>
+  </nav>
+  <div class="sidebar-foot">ScanFlow · Bongaigaon, Assam</div>
+</div>
+
+<div class="main"><div class="wrap">
 
   <div class="msg error" id="msgError"></div>
   <div class="msg success" id="msgSuccess"></div>
 
-  <!-- Add restaurant -->
-  <div class="card">
-    <h2>Add a restaurant</h2>
-    <p class="card-sub">Do this first when you onboard a new restaurant, before creating their owner login.</p>
-    <form id="addRestaurantForm">
-      <div class="form-grid">
-        <div class="field">
-          <label for="rName">Restaurant name</label>
-          <input type="text" id="rName" required placeholder="Brahmaputra Kitchen">
-        </div>
-        <div class="field">
-          <label for="rSlug">Slug (auto-filled, editable)</label>
-          <input type="text" id="rSlug" required placeholder="brahmaputra-kitchen">
-        </div>
-        <div class="field">
-          <label for="rCity">City</label>
-          <input type="text" id="rCity" value="Bongaigaon">
-        </div>
-        <div class="field">
-          <label for="rPlan">Plan</label>
-          <select id="rPlan">
-            <option value="starter">Starter — ₹999/mo</option>
-            <option value="growth">Growth — ₹2,499/mo</option>
-            <option value="chain">Chain — ₹6,999/mo</option>
-          </select>
-        </div>
-      </div>
-      <div class="btn-row"><button type="submit" class="btn btn-primary" id="addRestaurantBtn">Add restaurant</button></div>
-    </form>
+  <!-- ══ DASHBOARD ══ -->
+  <div class="view active" id="view-dashboard">
+    <div class="page-head">
+      <h1>Dashboard</h1>
+      <p>A quick read on the business — how many restaurants, what they're on, who's active.</p>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card blue"><div class="num" id="statTotal">—</div><div class="lbl">Total restaurants</div></div>
+      <div class="stat-card green"><div class="num" id="statActive">—</div><div class="lbl">Active</div></div>
+      <div class="stat-card red"><div class="num" id="statSuspended">—</div><div class="lbl">Suspended</div></div>
+      <div class="stat-card"><div class="num" id="statStaff">—</div><div class="lbl">Owner + waiter logins</div></div>
+    </div>
+    <div class="card">
+      <h2>Restaurants by plan</h2>
+      <p class="card-sub">Where your revenue is concentrated right now.</p>
+      <div id="planBars"><p style="color:var(--muted);font-size:13.5px;">Loading…</p></div>
+    </div>
   </div>
 
-  <!-- Restaurants list -->
-  <div class="card">
-    <h2>All restaurants</h2>
-    <p class="card-sub">Change a plan or suspend access directly from this table.</p>
-    <table>
-      <thead><tr><th>Name</th><th>City</th><th>Slug</th><th>Plan</th><th>Status</th><th></th></tr></thead>
-      <tbody id="restaurantRows"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody>
-    </table>
+  <!-- ══ RESTAURANTS ══ -->
+  <div class="view" id="view-restaurants">
+    <div class="page-head">
+      <h1>Restaurants</h1>
+      <p>Add restaurants and manage their plan and status.</p>
+    </div>
+
+    <div class="card">
+      <h2>Add a restaurant</h2>
+      <p class="card-sub">Do this first when you onboard a new restaurant, before creating their owner login.</p>
+      <form id="addRestaurantForm">
+        <div class="form-grid">
+          <div class="field">
+            <label for="rName">Restaurant name</label>
+            <input type="text" id="rName" required placeholder="Brahmaputra Kitchen">
+          </div>
+          <div class="field">
+            <label for="rSlug">Slug (auto-filled, editable)</label>
+            <input type="text" id="rSlug" required placeholder="brahmaputra-kitchen">
+          </div>
+          <div class="field">
+            <label for="rCity">City</label>
+            <input type="text" id="rCity" value="Bongaigaon">
+          </div>
+          <div class="field">
+            <label for="rPlan">Plan</label>
+            <select id="rPlan">
+              <option value="starter">Starter — ₹999/mo</option>
+              <option value="growth">Growth — ₹2,499/mo</option>
+              <option value="chain">Chain — ₹6,999/mo</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row"><button type="submit" class="btn btn-primary" id="addRestaurantBtn">Add restaurant</button></div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>All restaurants</h2>
+      <p class="card-sub">Change a plan or suspend access directly from this table.</p>
+      <table>
+        <thead><tr><th>Name</th><th>City</th><th>Slug</th><th>Plan</th><th>Status</th><th></th></tr></thead>
+        <tbody id="restaurantRows"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody>
+      </table>
+    </div>
   </div>
 
-  <!-- Link a login -->
-  <div class="card">
-    <h2>Link a login to a restaurant</h2>
-    <p class="card-sub">Create the person's login in Supabase first (Authentication → Users → Add user), then paste their User UID here to make them an owner or waiter.</p>
-    <form id="linkForm">
-      <div class="form-grid cols-3">
-        <div class="field field-full">
-          <label for="lUuid">User UID (from Supabase → Authentication → Users)</label>
-          <input type="text" id="lUuid" required placeholder="e.g. 4d3c369c-6a5f-4a06-bc9d-a173652a53e6">
+  <!-- ══ ADD USER ══ -->
+  <div class="view" id="view-adduser">
+    <div class="page-head">
+      <h1>Add User</h1>
+      <p>Create a new owner or waiter login, or link one you already created in Supabase.</p>
+    </div>
+
+    <div class="card">
+      <h2>Create a new login</h2>
+      <p class="card-sub">Creates the account and assigns its role in one step. Share the email + password shown afterward with the person directly.</p>
+      <form id="createUserForm">
+        <div class="form-grid">
+          <div class="field">
+            <label for="cName">Full name (optional)</label>
+            <input type="text" id="cName" placeholder="Priya Sharma">
+          </div>
+          <div class="field">
+            <label for="cEmail">Email</label>
+            <input type="email" id="cEmail" required placeholder="priya@example.com">
+          </div>
+          <div class="field">
+            <label for="cRole">Role</label>
+            <select id="cRole">
+              <option value="waiter">Waiter</option>
+              <option value="owner">Owner</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cRestaurant">Restaurant</label>
+            <select id="cRestaurant"><option value="">Loading restaurants…</option></select>
+          </div>
+          <div class="field field-full">
+            <label for="cPassword">Temporary password</label>
+            <div class="pw-row">
+              <input type="text" id="cPassword" required minlength="8">
+              <button type="button" class="btn-ghost-sm" id="genPwBtn">Generate</button>
+              <button type="button" class="btn-ghost-sm" id="copyPwBtn">Copy</button>
+            </div>
+            <p class="field-hint">Auto-filled with a random password — feel free to overwrite it. At least 8 characters.</p>
+          </div>
         </div>
-        <div class="field">
-          <label for="lRole">Role</label>
-          <select id="lRole">
-            <option value="owner">Owner</option>
-            <option value="waiter">Waiter</option>
-          </select>
+        <div class="btn-row"><button type="submit" class="btn btn-primary" id="createUserBtn">Create login</button></div>
+      </form>
+      <div class="result-box" id="createResult" style="display:none;"></div>
+      <div class="note" id="createUserNote" style="display:none;">This needs a one-time backend setup — see <code>create-user.js</code>'s setup notes and the Settings tab for status. Until it's configured, use "Link an existing login" below instead.</div>
+    </div>
+
+    <div class="card">
+      <h2>Link an existing login</h2>
+      <p class="card-sub">If you already created the person's login in Supabase directly (Authentication → Users → Add user), paste their User UID here to assign their role.</p>
+      <form id="linkForm">
+        <div class="form-grid cols-3">
+          <div class="field field-full">
+            <label for="lUuid">User UID (from Supabase → Authentication → Users)</label>
+            <input type="text" id="lUuid" required placeholder="e.g. 4d3c369c-6a5f-4a06-bc9d-a173652a53e6">
+          </div>
+          <div class="field">
+            <label for="lRole">Role</label>
+            <select id="lRole">
+              <option value="owner">Owner</option>
+              <option value="waiter">Waiter</option>
+            </select>
+          </div>
+          <div class="field" style="grid-column:span 2;">
+            <label for="lRestaurant">Restaurant</label>
+            <select id="lRestaurant"><option value="">Loading restaurants…</option></select>
+          </div>
         </div>
-        <div class="field" style="grid-column:span 2;">
-          <label for="lRestaurant">Restaurant</label>
-          <select id="lRestaurant"><option value="">Loading restaurants…</option></select>
-        </div>
-      </div>
-      <div class="btn-row"><button type="submit" class="btn btn-primary" id="linkBtn">Link this login</button></div>
-    </form>
-    <div class="note">Full name/email lookup by typing isn't available yet — that needs a secure backend function with Supabase's admin API, not something the browser can do safely. For now, copy the UID from the Supabase dashboard after creating the user.</div>
+        <div class="btn-row"><button type="submit" class="btn btn-primary" id="linkBtn">Link this login</button></div>
+      </form>
+    </div>
   </div>
+
+  <!-- ══ SETTINGS ══ -->
+  <div class="view" id="view-settings">
+    <div class="page-head">
+      <h1>Settings</h1>
+      <p>Your account and the status of backend pieces this dashboard depends on.</p>
+    </div>
+    <div class="card">
+      <h2>Your account</h2>
+      <table>
+        <tbody>
+          <tr><td style="color:var(--ink-soft);width:160px;">Email</td><td id="setEmail" style="font-weight:600;">—</td></tr>
+          <tr><td style="color:var(--ink-soft);">Role</td><td id="setRole" style="font-weight:600;">—</td></tr>
+          <tr><td style="color:var(--ink-soft);">User ID</td><td id="setId" class="slug">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Backend status</h2>
+      <p class="card-sub">Whether the secure "create login" function is wired up on Vercel.</p>
+      <div class="status-check"><span class="status-dot" id="statusDot"></span><span id="statusText">Checking…</span></div>
+    </div>
+  </div>
+
 </div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -190,10 +356,35 @@ select.inline-select{font:inherit;font-size:12.5px;padding:6px 8px;border:1.5px 
 let client;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/* ── Sidebar / view switching ── */
+const sidebar = document.getElementById('sidebar');
+const backdrop = document.getElementById('backdrop');
+function openSidebar(){ sidebar.classList.add('open'); backdrop.classList.add('open'); }
+function closeSidebar(){ sidebar.classList.remove('open'); backdrop.classList.remove('open'); }
+document.getElementById('hamburgerBtn').addEventListener('click', openSidebar);
+document.getElementById('sidebarClose').addEventListener('click', closeSidebar);
+backdrop.addEventListener('click', closeSidebar);
+
+document.querySelectorAll('.side-link').forEach(link => {
+  link.addEventListener('click', () => {
+    document.querySelectorAll('.side-link').forEach(l => l.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    link.classList.add('active');
+    document.getElementById('view-' + link.dataset.view).classList.add('active');
+    closeSidebar();
+    clearMsgs();
+  });
+});
+
+/* ── Shared helpers ── */
 function slugify(s){
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
 }
-
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str == null ? '' : String(str);
+  return d.innerHTML;
+}
 function showError(text){
   document.getElementById('msgSuccess').classList.remove('show');
   const el = document.getElementById('msgError');
@@ -210,26 +401,41 @@ function clearMsgs(){
   document.getElementById('msgError').classList.remove('show');
   document.getElementById('msgSuccess').classList.remove('show');
 }
+function generatePassword(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#%';
+  let out = '';
+  const arr = new Uint32Array(14);
+  crypto.getRandomValues(arr);
+  for (let i = 0; i < 14; i++) out += chars[arr[i] % chars.length];
+  return out;
+}
+
+/* ── Restaurants: load + render (feeds table, dashboard stats, and both dropdowns) ── */
+let restaurantCache = [];
 
 async function loadRestaurants(){
   const tbody = document.getElementById('restaurantRows');
-  const linkSelect = document.getElementById('lRestaurant');
   const { data, error } = await client.from('restaurants').select('*').order('created_at', { ascending: false });
 
   if (error) {
     console.error('ScanFlow: could not load restaurants', error);
     tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Couldn\'t load restaurants — check the console for details.</td></tr>';
-    linkSelect.innerHTML = '<option value="">— none available —</option>';
     return;
   }
 
-  if (!data.length) {
-    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No restaurants yet — add your first one above.</td></tr>';
-    linkSelect.innerHTML = '<option value="">— add a restaurant first —</option>';
+  restaurantCache = data || [];
+  renderRestaurantTable();
+  renderRestaurantDropdowns();
+  renderDashboardStats();
+}
+
+function renderRestaurantTable(){
+  const tbody = document.getElementById('restaurantRows');
+  if (!restaurantCache.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No restaurants yet — add your first one in the Restaurants tab.</td></tr>';
     return;
   }
-
-  tbody.innerHTML = data.map(r => `
+  tbody.innerHTML = restaurantCache.map(r => `
     <tr data-id="${r.id}">
       <td><strong>${escapeHtml(r.name)}</strong></td>
       <td>${escapeHtml(r.city || '—')}</td>
@@ -250,14 +456,13 @@ async function loadRestaurants(){
     </tr>
   `).join('');
 
-  linkSelect.innerHTML = data.map(r => `<option value="${r.id}">${escapeHtml(r.name)} (${escapeHtml(r.city||'')})</option>`).join('');
-
   document.querySelectorAll('.plan-select').forEach(sel => {
     sel.addEventListener('change', async () => {
       clearMsgs();
       const { error } = await client.from('restaurants').update({ plan: sel.value }).eq('id', sel.dataset.id);
       if (error) { console.error(error); showError('Could not update the plan. Check the console for details.'); return; }
       showSuccess('Plan updated.');
+      loadRestaurants();
     });
   });
 
@@ -276,16 +481,42 @@ async function loadRestaurants(){
   });
 }
 
-function escapeHtml(str){
-  const d = document.createElement('div');
-  d.textContent = str == null ? '' : String(str);
-  return d.innerHTML;
+function renderRestaurantDropdowns(){
+  const opts = restaurantCache.length
+    ? restaurantCache.map(r => `<option value="${r.id}">${escapeHtml(r.name)} (${escapeHtml(r.city||'')})</option>`).join('')
+    : '<option value="">— add a restaurant first —</option>';
+  document.getElementById('lRestaurant').innerHTML = opts;
+  document.getElementById('cRestaurant').innerHTML = opts;
 }
 
+function renderDashboardStats(){
+  const total = restaurantCache.length;
+  const active = restaurantCache.filter(r => r.status === 'active').length;
+  const suspended = restaurantCache.filter(r => r.status === 'suspended').length;
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statActive').textContent = active;
+  document.getElementById('statSuspended').textContent = suspended;
+
+  const plans = ['starter','growth','chain'];
+  const labels = {starter:'Starter',growth:'Growth',chain:'Chain'};
+  const max = Math.max(1, ...plans.map(p => restaurantCache.filter(r => r.plan === p).length));
+  document.getElementById('planBars').innerHTML = plans.map(p => {
+    const n = restaurantCache.filter(r => r.plan === p).length;
+    const pct = Math.round((n / max) * 100);
+    return `<div class="bar-row"><span class="bar-label">${labels[p]}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-n">${n}</span></div>`;
+  }).join('');
+}
+
+async function loadStaffCount(){
+  const { data, error } = await client.from('profiles').select('role').neq('role', 'admin');
+  if (error) { console.error('ScanFlow: could not load staff count', error); document.getElementById('statStaff').textContent = '—'; return; }
+  document.getElementById('statStaff').textContent = data.length;
+}
+
+/* ── Add restaurant ── */
 document.getElementById('rName').addEventListener('input', (e) => {
   document.getElementById('rSlug').value = slugify(e.target.value);
 });
-
 document.getElementById('addRestaurantForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   clearMsgs();
@@ -312,6 +543,71 @@ document.getElementById('addRestaurantForm').addEventListener('submit', async (e
   loadRestaurants();
 });
 
+/* ── Create a new login (calls the secure serverless function) ── */
+document.getElementById('cPassword').value = generatePassword();
+document.getElementById('genPwBtn').addEventListener('click', () => {
+  document.getElementById('cPassword').value = generatePassword();
+});
+document.getElementById('copyPwBtn').addEventListener('click', async () => {
+  const val = document.getElementById('cPassword').value;
+  try { await navigator.clipboard.writeText(val); showSuccess('Password copied.'); }
+  catch { showError('Could not copy — select and copy manually.'); }
+});
+
+document.getElementById('createUserForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearMsgs();
+  document.getElementById('createResult').style.display = 'none';
+
+  const full_name = document.getElementById('cName').value.trim();
+  const email = document.getElementById('cEmail').value.trim();
+  const role = document.getElementById('cRole').value;
+  const restaurant_id = document.getElementById('cRestaurant').value;
+  const password = document.getElementById('cPassword').value;
+
+  if (!restaurant_id) { showError('Pick a restaurant first — add one in the Restaurants tab if the list is empty.'); return; }
+  if (password.length < 8) { showError('Password must be at least 8 characters.'); return; }
+
+  const btn = document.getElementById('createUserBtn');
+  btn.disabled = true; btn.textContent = 'Creating…';
+
+  try {
+    const { data: { session } } = await client.auth.getSession();
+    const resp = await fetch('/api/create-user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ email, password, role, restaurant_id, full_name })
+    });
+    const result = await resp.json();
+
+    if (!resp.ok) {
+      showError(result.error || 'Could not create the login.');
+      document.getElementById('createUserNote').style.display = 'block';
+      return;
+    }
+
+    const restaurantName = document.getElementById('cRestaurant').selectedOptions[0]?.textContent || '';
+    showSuccess(`Login created for ${email}.`);
+    const box = document.getElementById('createResult');
+    box.style.display = 'block';
+    box.innerHTML = `
+      <div><span class="rk">Email</span><br><span class="rv">${escapeHtml(email)}</span></div>
+      <div style="margin-top:8px;"><span class="rk">Password</span><br><span class="rv">${escapeHtml(password)}</span></div>
+      <div style="margin-top:8px;"><span class="rk">Role</span><br><span class="rv">${role} · ${escapeHtml(restaurantName)}</span></div>
+      <p style="margin-top:10px;color:var(--ink-soft);font-family:var(--sans);">Share these with them directly (WhatsApp, in person). They can sign in at login.html right away.</p>
+    `;
+    document.getElementById('createUserForm').reset();
+    document.getElementById('cPassword').value = generatePassword();
+    loadStaffCount();
+  } catch (err) {
+    console.error('ScanFlow: create-user request failed', err);
+    showError('Could not reach the server. If this keeps happening, check the Settings tab for backend status.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create login';
+  }
+});
+
+/* ── Link an existing login ── */
 document.getElementById('linkForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   clearMsgs();
@@ -321,7 +617,7 @@ document.getElementById('linkForm').addEventListener('submit', async (e) => {
   const restaurantName = document.getElementById('lRestaurant').selectedOptions[0]?.textContent || '';
 
   if (!UUID_RE.test(uuid)) { showError('That doesn\'t look like a valid User UID — copy it exactly from Supabase → Authentication → Users.'); return; }
-  if (!restaurantId) { showError('Pick a restaurant first — add one above if the list is empty.'); return; }
+  if (!restaurantId) { showError('Pick a restaurant first — add one in the Restaurants tab if the list is empty.'); return; }
   if (!confirm(`Grant ${role.toUpperCase()} access to user ${uuid} for "${restaurantName}"? Double-check the UID is correct before continuing.`)) return;
 
   const btn = document.getElementById('linkBtn');
@@ -340,14 +636,38 @@ document.getElementById('linkForm').addEventListener('submit', async (e) => {
   }
   showSuccess(`Linked as ${role} of "${restaurantName}". They can log in at login.html now.`);
   document.getElementById('linkForm').reset();
+  loadStaffCount();
 });
 
+/* ── Settings: account info + backend health check ── */
+async function checkBackendStatus(){
+  const dot = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  try {
+    const resp = await fetch('/api/create-user');
+    const result = await resp.json();
+    if (result.configured) {
+      dot.classList.add('ok'); text.textContent = 'Configured — you can create logins directly from Add User.';
+    } else {
+      dot.classList.add('bad'); text.textContent = 'Not configured yet — add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Vercel, then redeploy.';
+    }
+  } catch {
+    dot.classList.add('bad'); text.textContent = 'Could not reach /api/create-user — has it been uploaded to your repo yet?';
+  }
+}
+
+/* ── Boot ── */
 (async () => {
   const profile = await scanflowRequireRole('admin');
   if (!profile) return;
   client = getScanflowClient();
   document.getElementById('whoEmail').textContent = profile.email;
+  document.getElementById('setEmail').textContent = profile.email;
+  document.getElementById('setRole').textContent = profile.role;
+  document.getElementById('setId').textContent = profile.id;
   loadRestaurants();
+  loadStaffCount();
+  checkBackendStatus();
 })();
 document.getElementById('signoutBtn').addEventListener('click', scanflowSignOut);
 </script>
