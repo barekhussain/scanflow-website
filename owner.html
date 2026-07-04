@@ -53,7 +53,7 @@ a{color:inherit;text-decoration:none;}
 .sidebar.open{transform:translateX(0);}
 .sidebar-head{display:flex;align-items:center;justify-content:space-between;padding:6px 8px 20px;}
 .sidebar-head .sf-word .n{color:#fff;}
-.sidebar-close{width:30px;height:30px;border-radius:8px;border:none;background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-size:16px;}
+.sidebar-close{width:38px;height:38px;border-radius:8px;border:none;background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-size:16px;}
 .side-nav{display:flex;flex-direction:column;gap:3px;}
 .side-link{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;color:#AFC3D8;font-size:14px;font-weight:500;cursor:pointer;border:none;background:none;font-family:inherit;text-align:left;width:100%;}
 .side-link:hover{background:rgba(255,255,255,.06);color:#fff;}
@@ -98,11 +98,13 @@ a{color:inherit;text-decoration:none;}
 .btn-primary{background:var(--blue);color:#fff;}
 .btn-primary:hover{background:var(--blue-deep);}
 .btn-primary:disabled{opacity:.6;cursor:not-allowed;}
-.btn-ghost-sm{background:var(--bg);border:1.5px solid var(--border);color:var(--ink-soft);font-size:13px;font-weight:600;padding:0 14px;border-radius:10px;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.btn-ghost-sm{background:var(--bg);border:1.5px solid var(--border);color:var(--ink-soft);font-size:13px;font-weight:600;padding:9px 14px;border-radius:10px;cursor:pointer;font-family:inherit;white-space:nowrap;}
 .btn-ghost-sm:hover{border-color:var(--blue);color:var(--blue);}
 .btn-row{margin-top:18px;}
 
 table{width:100%;border-collapse:collapse;font-size:13.5px;}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.table-scroll table{min-width:560px;}
 th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);padding:0 10px 10px;border-bottom:1px solid var(--border);}
 td{padding:12px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
 tr:last-child td{border-bottom:none;}
@@ -115,7 +117,7 @@ input.inline-input{width:80px;}
 .veg-dot::after{content:'';width:5px;height:5px;border-radius:50%;}
 .veg-dot.v{border-color:#1E9E5A;} .veg-dot.v::after{background:#1E9E5A;}
 .veg-dot.n{border-color:#D64541;} .veg-dot.n::after{background:#D64541;}
-.mini-btn{font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-family:inherit;color:var(--ink-soft);}
+.mini-btn{font-size:12px;font-weight:600;padding:8px 12px;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-family:inherit;color:var(--ink-soft);}
 .mini-btn:hover{border-color:var(--red);color:var(--red);}
 .mini-btn.instock-btn:hover{border-color:var(--green);color:var(--green);}
 .empty-row td{text-align:center;color:var(--muted);padding:26px 10px;}
@@ -249,7 +251,7 @@ input.inline-input{width:80px;}
   <div class="view" id="view-menu">
     <div class="page-head">
       <h1>Menu</h1>
-      <p>Add dishes, set prices, and toggle what's in stock — changes are live immediately once the customer menu page ships.</p>
+      <p>Add dishes, set prices, and toggle what's in stock — changes are live immediately on your customer menu.</p>
     </div>
 
     <div class="card">
@@ -307,10 +309,10 @@ input.inline-input{width:80px;}
     <div class="card">
       <h2>Your menu</h2>
       <div class="search-row"><input type="text" id="menuSearch" placeholder="Search your menu…"></div>
-      <table>
+      <div class="table-scroll"><table>
         <thead><tr><th>Dish</th><th></th><th>Category</th><th>Price</th><th>Status</th><th></th></tr></thead>
         <tbody id="menuRows"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody>
-      </table>
+      </table></div>
     </div>
   </div>
 
@@ -351,10 +353,10 @@ input.inline-input{width:80px;}
 
     <div class="card">
       <h2>Your waiters</h2>
-      <table>
+      <div class="table-scroll"><table>
         <thead><tr><th>Name</th><th>Added</th><th></th></tr></thead>
         <tbody id="waiterRows"><tr class="empty-row"><td colspan="3">Loading…</td></tr></tbody>
-      </table>
+      </table></div>
     </div>
   </div>
 
@@ -364,7 +366,7 @@ input.inline-input{width:80px;}
       <h1>Tables &amp; QR codes</h1>
       <p>Add a table and get its QR code — customers scan this to open your menu.</p>
     </div>
-    <div class="note">The customer-facing ordering page isn't live yet, so these QR codes will 404 for now. Set tables up here ahead of time; the codes will start working the moment that page ships — no need to regenerate them. Each table's code is permanent once created — there's no way to change it from here, by design, so a printed and laminated code never goes stale.</div>
+    <div class="note">Customers scan a table's code to open the menu and order — no app or account needed on their end. Each table's code is permanent once created — there's no way to change it from here, by design, so a printed and laminated code never goes stale.</div>
     <div class="card">
       <h2>Add tables</h2>
       <div class="form-grid">
