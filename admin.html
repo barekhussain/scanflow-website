@@ -12,6 +12,9 @@
   --bg:#F4F7FB; --card:#FFFFFF;
   --ink:#0D2539; --ink-soft:#46586B; --muted:#8493A6;
   --blue:#1783F2; --blue-deep:#0E6BD6; --blue-soft:#E7F1FE;
+  --green:#1E9E5A; --green-soft:#E9F7EF;
+  --red:#D64541; --red-soft:#FDEDEC;
+  --amber:#E8920C; --amber-soft:#FCF1DD;
   --border:#E2E9F2;
   --radius:16px;
   --serif:'Fraunces',Georgia,serif;
@@ -19,13 +22,13 @@
   --mono:'JetBrains Mono',monospace;
   --round:'Baloo 2',var(--sans);
   --shadow:0 18px 50px -16px rgba(13,37,57,.22);
-  --accent:#1783F2; --accent-soft:#E7F1FE; --accent-tag:ADMIN;
+  --accent:#1783F2; --accent-soft:#E7F1FE;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:var(--sans);background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;}
 a{color:inherit;text-decoration:none;}
-.wrap{max-width:900px;margin:0 auto;padding:0 24px;}
-.nav{background:var(--card);border-bottom:1px solid var(--border);}
+.wrap{max-width:980px;margin:0 auto;padding:0 24px;}
+.nav{background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;}
 .nav-in{display:flex;align-items:center;justify-content:space-between;height:64px;}
 .sf-logo{display:inline-flex;align-items:center;gap:8px;}
 .sf-mark{width:28px;height:28px;flex-shrink:0;}
@@ -37,19 +40,52 @@ a{color:inherit;text-decoration:none;}
 .signout{font-size:13px;font-weight:600;color:#fff;background:var(--ink);padding:9px 16px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;}
 .signout:hover{background:#16293C;}
 
-.main{padding:56px 0;}
-.hero-card{background:var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);padding:40px;text-align:center;}
-.badge{display:inline-block;font-size:32px;margin-bottom:14px;}
-.hero-card h1{font-family:var(--serif);font-weight:600;font-size:26px;margin-bottom:10px;}
-.hero-card p{font-size:14.5px;color:var(--ink-soft);max-width:480px;margin:0 auto;line-height:1.6;}
-.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px;}
-.fact{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:left;}
-.fact .k{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
-.fact .v{font-size:14px;font-weight:600;}
-.next{margin-top:32px;text-align:left;background:var(--accent-soft);border-radius:14px;padding:18px 20px;}
-.next h3{font-size:14px;margin-bottom:8px;}
-.next ul{padding-left:18px;font-size:13.5px;color:var(--ink-soft);line-height:1.8;}
-@media(max-width:620px){.facts{grid-template-columns:1fr;}.who .email{display:none;}}
+.main{padding:40px 0 80px;}
+.page-head{margin-bottom:28px;}
+.page-head h1{font-family:var(--serif);font-weight:600;font-size:28px;margin-bottom:6px;}
+.page-head p{font-size:14px;color:var(--ink-soft);}
+
+.msg{font-size:13.5px;border-radius:10px;padding:11px 14px;margin-bottom:20px;display:none;line-height:1.5;}
+.msg.show{display:block;}
+.msg.error{background:var(--red-soft);color:var(--red);}
+.msg.success{background:var(--green-soft);color:var(--green);}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:26px 28px;margin-bottom:24px;box-shadow:var(--shadow);}
+.card h2{font-family:var(--serif);font-weight:600;font-size:19px;margin-bottom:4px;}
+.card .card-sub{font-size:13px;color:var(--ink-soft);margin-bottom:20px;}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-grid.cols-3{grid-template-columns:1fr 1fr 1fr;}
+.field{margin-bottom:0;}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;}
+.field input,.field select{width:100%;font:inherit;font-size:14px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--ink);}
+.field input:focus,.field select:focus{outline:none;border-color:var(--blue);background:#fff;}
+.field-full{grid-column:1/-1;}
+
+.btn{font-weight:600;font-size:14px;padding:11px 20px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;transition:background .15s,opacity .15s;}
+.btn-primary{background:var(--blue);color:#fff;}
+.btn-primary:hover{background:var(--blue-deep);}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;}
+.btn-row{margin-top:18px;}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;}
+th{text-align:left;font-family:var(--mono);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);padding:0 10px 10px;border-bottom:1px solid var(--border);}
+td{padding:12px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+.slug{font-family:var(--mono);font-size:12px;color:var(--ink-soft);}
+select.inline-select{font:inherit;font-size:12.5px;padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--ink);}
+.pill{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.4px;padding:3px 9px;border-radius:20px;text-transform:uppercase;}
+.pill.active{background:var(--green-soft);color:var(--green);}
+.pill.suspended{background:var(--red-soft);color:var(--red);}
+.pill.trial{background:var(--amber-soft);color:var(--amber);}
+.mini-btn{font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;font-family:inherit;color:var(--ink-soft);}
+.mini-btn:hover{border-color:var(--red);color:var(--red);}
+.mini-btn.reactivate:hover{border-color:var(--green);color:var(--green);}
+.empty-row td{text-align:center;color:var(--muted);padding:26px 10px;}
+
+.note{background:var(--accent-soft);border-radius:12px;padding:14px 16px;font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin-top:6px;}
+.note code{background:rgba(255,255,255,.6);padding:1px 5px;border-radius:4px;}
+@media(max-width:680px){.form-grid,.form-grid.cols-3{grid-template-columns:1fr;}table{font-size:12.5px;}th:nth-child(3),td:nth-child(3){display:none;}}
 </style>
 </head>
 <body>
@@ -71,37 +107,247 @@ a{color:inherit;text-decoration:none;}
 </div></div>
 
 <div class="main"><div class="wrap">
-  <div class="hero-card">
-    <span class="badge">🛠️</span>
-    <h1>Master admin dashboard — placeholder</h1>
-    <p>Your login and role routing are working. This page confirms it. The real admin dashboard (add restaurants, manage subscriptions, cross-restaurant analytics) gets built next.</p>
-    <div class="facts">
-      <div class="fact"><div class="k">Signed in as</div><div class="v" id="factEmail">—</div></div>
-      <div class="fact"><div class="k">Role</div><div class="v" id="factRole">—</div></div>
-      <div class="fact"><div class="k">Account ID</div><div class="v" id="factId" style="font-family:var(--mono);font-size:11.5px;">—</div></div>
-    </div>
-    <div class="next">
-      <h3>Coming here next</h3>
-      <ul>
-        <li>Add a new restaurant + generate its first owner login</li>
-        <li>Subscription status per restaurant (plan, renewal date, payment status)</li>
-        <li>Cross-restaurant analytics (revenue, active tables, top dishes)</li>
-        <li>Suspend / reactivate a restaurant's access</li>
-      </ul>
-    </div>
+  <div class="page-head">
+    <h1>Restaurants</h1>
+    <p>Add restaurants, manage their plan and status, and link a Supabase login to one as its owner or waiter.</p>
+  </div>
+
+  <div class="msg error" id="msgError"></div>
+  <div class="msg success" id="msgSuccess"></div>
+
+  <!-- Add restaurant -->
+  <div class="card">
+    <h2>Add a restaurant</h2>
+    <p class="card-sub">Do this first when you onboard a new restaurant, before creating their owner login.</p>
+    <form id="addRestaurantForm">
+      <div class="form-grid">
+        <div class="field">
+          <label for="rName">Restaurant name</label>
+          <input type="text" id="rName" required placeholder="Brahmaputra Kitchen">
+        </div>
+        <div class="field">
+          <label for="rSlug">Slug (auto-filled, editable)</label>
+          <input type="text" id="rSlug" required placeholder="brahmaputra-kitchen">
+        </div>
+        <div class="field">
+          <label for="rCity">City</label>
+          <input type="text" id="rCity" value="Bongaigaon">
+        </div>
+        <div class="field">
+          <label for="rPlan">Plan</label>
+          <select id="rPlan">
+            <option value="starter">Starter — ₹999/mo</option>
+            <option value="growth">Growth — ₹2,499/mo</option>
+            <option value="chain">Chain — ₹6,999/mo</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row"><button type="submit" class="btn btn-primary" id="addRestaurantBtn">Add restaurant</button></div>
+    </form>
+  </div>
+
+  <!-- Restaurants list -->
+  <div class="card">
+    <h2>All restaurants</h2>
+    <p class="card-sub">Change a plan or suspend access directly from this table.</p>
+    <table>
+      <thead><tr><th>Name</th><th>City</th><th>Slug</th><th>Plan</th><th>Status</th><th></th></tr></thead>
+      <tbody id="restaurantRows"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- Link a login -->
+  <div class="card">
+    <h2>Link a login to a restaurant</h2>
+    <p class="card-sub">Create the person's login in Supabase first (Authentication → Users → Add user), then paste their User UID here to make them an owner or waiter.</p>
+    <form id="linkForm">
+      <div class="form-grid cols-3">
+        <div class="field field-full">
+          <label for="lUuid">User UID (from Supabase → Authentication → Users)</label>
+          <input type="text" id="lUuid" required placeholder="e.g. 4d3c369c-6a5f-4a06-bc9d-a173652a53e6">
+        </div>
+        <div class="field">
+          <label for="lRole">Role</label>
+          <select id="lRole">
+            <option value="owner">Owner</option>
+            <option value="waiter">Waiter</option>
+          </select>
+        </div>
+        <div class="field" style="grid-column:span 2;">
+          <label for="lRestaurant">Restaurant</label>
+          <select id="lRestaurant"><option value="">Loading restaurants…</option></select>
+        </div>
+      </div>
+      <div class="btn-row"><button type="submit" class="btn btn-primary" id="linkBtn">Link this login</button></div>
+    </form>
+    <div class="note">Full name/email lookup by typing isn't available yet — that needs a secure backend function with Supabase's admin API, not something the browser can do safely. For now, copy the UID from the Supabase dashboard after creating the user.</div>
   </div>
 </div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 <script>
+let client;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function slugify(s){
+  return s.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+}
+
+function showError(text){
+  document.getElementById('msgSuccess').classList.remove('show');
+  const el = document.getElementById('msgError');
+  el.textContent = text; el.classList.add('show');
+  el.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function showSuccess(text){
+  document.getElementById('msgError').classList.remove('show');
+  const el = document.getElementById('msgSuccess');
+  el.textContent = text; el.classList.add('show');
+  el.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function clearMsgs(){
+  document.getElementById('msgError').classList.remove('show');
+  document.getElementById('msgSuccess').classList.remove('show');
+}
+
+async function loadRestaurants(){
+  const tbody = document.getElementById('restaurantRows');
+  const linkSelect = document.getElementById('lRestaurant');
+  const { data, error } = await client.from('restaurants').select('*').order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('ScanFlow: could not load restaurants', error);
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">Couldn\'t load restaurants — check the console for details.</td></tr>';
+    linkSelect.innerHTML = '<option value="">— none available —</option>';
+    return;
+  }
+
+  if (!data.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No restaurants yet — add your first one above.</td></tr>';
+    linkSelect.innerHTML = '<option value="">— add a restaurant first —</option>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(r => `
+    <tr data-id="${r.id}">
+      <td><strong>${escapeHtml(r.name)}</strong></td>
+      <td>${escapeHtml(r.city || '—')}</td>
+      <td class="slug">${escapeHtml(r.slug)}</td>
+      <td>
+        <select class="inline-select plan-select" data-id="${r.id}">
+          <option value="starter" ${r.plan==='starter'?'selected':''}>Starter</option>
+          <option value="growth" ${r.plan==='growth'?'selected':''}>Growth</option>
+          <option value="chain" ${r.plan==='chain'?'selected':''}>Chain</option>
+        </select>
+      </td>
+      <td><span class="pill ${r.status}">${escapeHtml(r.status)}</span></td>
+      <td>
+        <button class="mini-btn status-toggle ${r.status==='suspended'?'reactivate':''}" data-id="${r.id}" data-status="${r.status}">
+          ${r.status === 'suspended' ? 'Reactivate' : 'Suspend'}
+        </button>
+      </td>
+    </tr>
+  `).join('');
+
+  linkSelect.innerHTML = data.map(r => `<option value="${r.id}">${escapeHtml(r.name)} (${escapeHtml(r.city||'')})</option>`).join('');
+
+  document.querySelectorAll('.plan-select').forEach(sel => {
+    sel.addEventListener('change', async () => {
+      clearMsgs();
+      const { error } = await client.from('restaurants').update({ plan: sel.value }).eq('id', sel.dataset.id);
+      if (error) { console.error(error); showError('Could not update the plan. Check the console for details.'); return; }
+      showSuccess('Plan updated.');
+    });
+  });
+
+  document.querySelectorAll('.status-toggle').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      clearMsgs();
+      const newStatus = btn.dataset.status === 'suspended' ? 'active' : 'suspended';
+      const row = btn.closest('tr');
+      const name = row.querySelector('td strong').textContent;
+      if (newStatus === 'suspended' && !confirm(`Suspend "${name}"? Their staff will lose access immediately.`)) return;
+      const { error } = await client.from('restaurants').update({ status: newStatus }).eq('id', btn.dataset.id);
+      if (error) { console.error(error); showError('Could not update status. Check the console for details.'); return; }
+      showSuccess(`"${name}" is now ${newStatus}.`);
+      loadRestaurants();
+    });
+  });
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str == null ? '' : String(str);
+  return d.innerHTML;
+}
+
+document.getElementById('rName').addEventListener('input', (e) => {
+  document.getElementById('rSlug').value = slugify(e.target.value);
+});
+
+document.getElementById('addRestaurantForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearMsgs();
+  const btn = document.getElementById('addRestaurantBtn');
+  const name = document.getElementById('rName').value.trim();
+  const slug = slugify(document.getElementById('rSlug').value);
+  const city = document.getElementById('rCity').value.trim() || 'Bongaigaon';
+  const plan = document.getElementById('rPlan').value;
+  if (!name || !slug) { showError('Name and slug are required.'); return; }
+
+  btn.disabled = true; btn.textContent = 'Adding…';
+  const { error } = await client.from('restaurants').insert({ name, slug, city, plan });
+  btn.disabled = false; btn.textContent = 'Add restaurant';
+
+  if (error) {
+    console.error('ScanFlow: could not add restaurant', error);
+    if (error.code === '23505') showError(`A restaurant with the slug "${slug}" already exists — try a different name or edit the slug.`);
+    else showError('Could not add the restaurant. Check the console for details.');
+    return;
+  }
+  showSuccess(`"${name}" added.`);
+  document.getElementById('addRestaurantForm').reset();
+  document.getElementById('rCity').value = 'Bongaigaon';
+  loadRestaurants();
+});
+
+document.getElementById('linkForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearMsgs();
+  const uuid = document.getElementById('lUuid').value.trim();
+  const role = document.getElementById('lRole').value;
+  const restaurantId = document.getElementById('lRestaurant').value;
+  const restaurantName = document.getElementById('lRestaurant').selectedOptions[0]?.textContent || '';
+
+  if (!UUID_RE.test(uuid)) { showError('That doesn\'t look like a valid User UID — copy it exactly from Supabase → Authentication → Users.'); return; }
+  if (!restaurantId) { showError('Pick a restaurant first — add one above if the list is empty.'); return; }
+  if (!confirm(`Grant ${role.toUpperCase()} access to user ${uuid} for "${restaurantName}"? Double-check the UID is correct before continuing.`)) return;
+
+  const btn = document.getElementById('linkBtn');
+  btn.disabled = true; btn.textContent = 'Linking…';
+  const { data, error } = await client.from('profiles').update({ role, restaurant_id: restaurantId }).eq('id', uuid).select();
+  btn.disabled = false; btn.textContent = 'Link this login';
+
+  if (error) {
+    console.error('ScanFlow: could not link profile', error);
+    showError('Could not link this login. Check the console for details.');
+    return;
+  }
+  if (!data || !data.length) {
+    showError('No account found for that UID. Make sure the user was created in Supabase Authentication first — their profile row is created automatically on signup.');
+    return;
+  }
+  showSuccess(`Linked as ${role} of "${restaurantName}". They can log in at login.html now.`);
+  document.getElementById('linkForm').reset();
+});
+
 (async () => {
   const profile = await scanflowRequireRole('admin');
   if (!profile) return;
+  client = getScanflowClient();
   document.getElementById('whoEmail').textContent = profile.email;
-  document.getElementById('factEmail').textContent = profile.email;
-  document.getElementById('factRole').textContent = profile.role;
-  document.getElementById('factId').textContent = profile.id;
+  loadRestaurants();
 })();
 document.getElementById('signoutBtn').addEventListener('click', scanflowSignOut);
 </script>
