@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Menu — ScanFlow</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/png" href="logo/Tranparent%20logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Baloo+2:wght@800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F7FB; --card:#FFFFFF;
+  --ink:#0D2539; --ink-soft:#46586B; --muted:#8493A6;
+  --blue:#1783F2; --blue-deep:#0E6BD6; --blue-soft:#E7F1FE;
+  --green:#1E9E5A; --green-soft:#E9F7EF;
+  --red:#D64541; --red-soft:#FDEDEC;
+  --amber:#E8920C; --amber-soft:#FCF1DD;
+  --border:#E2E9F2;
+  --radius:16px;
+  --serif:'Fraunces',Georgia,serif;
+  --sans:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --round:'Baloo 2',var(--sans);
+  --shadow:0 18px 50px -16px rgba(13,37,57,.22);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;padding-bottom:90px;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px;}
+
+/* ── Header ── */
+.menu-header{background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:30;}
+.menu-header-in{display:flex;align-items:center;gap:12px;height:64px;}
+.sf-mark{width:30px;height:30px;flex-shrink:0;}
+.head-text{flex:1;min-width:0;}
+.head-text .rname{font-family:var(--serif);font-weight:600;font-size:16px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.head-text .rcity{font-size:11.5px;color:var(--muted);}
+.table-pill{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.4px;background:var(--blue-soft);color:var(--blue-deep);padding:6px 12px;border-radius:20px;flex-shrink:0;white-space:nowrap;}
+
+/* ── Generic states ── */
+.state-card{max-width:420px;margin:80px auto;text-align:center;padding:0 20px;}
+.state-card .emoji{font-size:40px;margin-bottom:14px;}
+.state-card h1{font-family:var(--serif);font-weight:600;font-size:21px;margin-bottom:10px;}
+.state-card p{font-size:14px;color:var(--ink-soft);line-height:1.6;}
+.spinner{width:28px;height:28px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--blue);animation:spin .8s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── Veg legend / search / chips ── */
+.veg-dot{width:12px;height:12px;border:1.6px solid;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;vertical-align:-2px;flex-shrink:0;}
+.veg-dot::after{content:'';width:5px;height:5px;border-radius:50%;}
+.veg-dot.v{border-color:var(--green);} .veg-dot.v::after{background:var(--green);}
+.veg-dot.n{border-color:var(--red);} .veg-dot.n::after{background:var(--red);}
+.veg-legend{display:flex;gap:16px;font-size:11.5px;color:var(--muted);padding:12px 0 2px;}
+.veg-legend span{display:inline-flex;align-items:center;gap:6px;}
+
+.search-row{margin:14px 0 10px;}
+.search-row input{width:100%;font:inherit;font-size:14.5px;padding:12px 14px;border:1.5px solid var(--border);border-radius:12px;background:var(--card);color:var(--ink);}
+.search-row input:focus{outline:none;border-color:var(--blue);}
+
+.cat-chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 16px;scrollbar-width:none;}
+.cat-chips::-webkit-scrollbar{display:none;}
+.chip{flex-shrink:0;font-size:13px;font-weight:600;padding:8px 16px;border-radius:20px;background:var(--card);border:1.5px solid var(--border);color:var(--ink-soft);cursor:pointer;white-space:nowrap;}
+.chip.active{background:var(--blue);border-color:var(--blue);color:#fff;}
+
+/* ── Menu list ── */
+.cat-heading{font-family:var(--serif);font-weight:600;font-size:17px;margin:22px 0 10px;}
+.item-card{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;}
+.item-main{flex:1;min-width:0;}
+.item-top{display:flex;align-items:center;gap:8px;}
+.item-name{font-weight:600;font-size:14.5px;}
+.item-desc{font-size:12.5px;color:var(--ink-soft);margin-top:3px;line-height:1.5;}
+.item-price{font-family:var(--mono);font-weight:700;font-size:14px;margin-top:6px;}
+.item-side{flex-shrink:0;display:flex;align-items:center;}
+.add-btn{background:var(--blue-soft);color:var(--blue-deep);border:none;font-weight:700;font-size:13px;padding:9px 18px;border-radius:10px;cursor:pointer;}
+.add-btn:hover{background:var(--blue);color:#fff;}
+.qty-stepper{display:flex;align-items:center;gap:2px;background:var(--blue);border-radius:10px;overflow:hidden;}
+.qty-stepper button{width:32px;height:32px;background:none;border:none;color:#fff;font-size:17px;font-weight:700;cursor:pointer;line-height:1;}
+.qty-stepper button:hover{background:rgba(255,255,255,.18);}
+.qty-stepper .qty-n{width:26px;text-align:center;color:#fff;font-family:var(--mono);font-weight:700;font-size:13.5px;}
+.empty-menu{text-align:center;color:var(--muted);font-size:13.5px;padding:60px 20px;}
+
+/* ── Sticky cart bar ── */
+.cart-bar{position:fixed;left:0;right:0;bottom:0;z-index:40;transform:translateY(120%);transition:transform .25s cubic-bezier(.2,.7,.3,1);}
+.cart-bar.show{transform:translateY(0);}
+.cart-bar-in{max-width:640px;margin:0 auto;padding:12px 16px;}
+.cart-bar-btn{width:100%;background:var(--ink);color:#fff;border:none;border-radius:14px;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;font-size:14.5px;font-weight:600;cursor:pointer;box-shadow:var(--shadow);}
+.cart-bar-btn .count{background:var(--blue);font-family:var(--mono);font-size:12px;font-weight:700;padding:3px 9px;border-radius:20px;margin-right:8px;}
+
+/* ── Cart drawer ── */
+.backdrop{position:fixed;inset:0;background:rgba(13,37,57,.45);opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;}
+.backdrop.open{opacity:1;pointer-events:auto;}
+.drawer{position:fixed;left:0;right:0;bottom:0;max-width:640px;margin:0 auto;background:var(--card);border-radius:22px 22px 0 0;z-index:51;transform:translateY(100%);transition:transform .28s cubic-bezier(.2,.7,.3,1);max-height:88vh;display:flex;flex-direction:column;}
+.drawer.open{transform:translateY(0);}
+.drawer-head{padding:18px 20px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.drawer-head h2{font-family:var(--serif);font-weight:600;font-size:18px;}
+.drawer-close{background:var(--bg);border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;color:var(--ink-soft);}
+.drawer-body{overflow-y:auto;padding:14px 20px;flex:1;}
+.cart-line{display:flex;gap:10px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border);}
+.cart-line:last-child{border-bottom:none;}
+.cart-line-main{flex:1;min-width:0;}
+.cart-line-name{font-weight:600;font-size:14px;}
+.cart-line-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.note-toggle{background:none;border:none;color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;padding:0;margin-top:6px;}
+.note-input{width:100%;margin-top:6px;font:inherit;font-size:12.5px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);}
+.cart-line-side{flex-shrink:0;text-align:right;}
+.cart-line-price{font-family:var(--mono);font-weight:700;font-size:13.5px;margin-bottom:6px;}
+.order-note{margin-top:6px;}
+.order-note label{font-size:12.5px;font-weight:600;color:var(--ink-soft);display:block;margin-bottom:6px;}
+.order-note textarea{width:100%;font:inherit;font-size:13px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);resize:vertical;min-height:52px;}
+.drawer-foot{border-top:1px solid var(--border);padding:14px 20px calc(18px + env(safe-area-inset-bottom));}
+.total-row{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:12px;}
+.total-row .amt{font-family:var(--mono);font-weight:700;font-size:19px;}
+.place-btn{width:100%;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:700;cursor:pointer;}
+.place-btn:disabled{opacity:.6;cursor:default;}
+.pay-note{text-align:center;font-size:11.5px;color:var(--muted);margin-top:10px;}
+.cart-empty{text-align:center;color:var(--muted);font-size:13.5px;padding:40px 20px;}
+
+/* ── Status view ── */
+.status-card{background:var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);padding:32px 24px;text-align:center;margin-top:28px;}
+.status-icon{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;}
+.status-icon.pending{background:var(--amber-soft);}
+.status-icon.preparing{background:var(--blue-soft);}
+.status-icon.ready{background:var(--green-soft);}
+.status-icon.served{background:var(--green-soft);}
+.status-icon.cancelled{background:var(--red-soft);}
+.status-title{font-family:var(--serif);font-weight:600;font-size:21px;margin-bottom:6px;}
+.status-sub{font-size:13.5px;color:var(--ink-soft);line-height:1.6;}
+.status-steps{display:flex;justify-content:center;gap:8px;margin:20px 0;}
+.status-steps .step{width:34px;height:5px;border-radius:3px;background:var(--border);}
+.status-steps .step.done{background:var(--blue);}
+.status-steps .step.cancelled-step{background:var(--red);}
+.recap{text-align:left;margin-top:22px;border-top:1px solid var(--border);padding-top:16px;}
+.recap-line{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;}
+.recap-line .n{color:var(--ink-soft);}
+.recap-line .p{font-family:var(--mono);font-weight:600;}
+.order-more-btn{width:100%;margin-top:20px;background:var(--ink);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14.5px;font-weight:600;cursor:pointer;}
+
+/* ── Footer ── */
+.foot{text-align:center;padding:32px 20px 12px;font-size:11.5px;color:var(--muted);}
+.foot a{color:var(--blue);font-weight:600;}
+
+.hidden{display:none !important;}
+@media(max-width:420px){.head-text .rcity{display:none;}}
+</style>
+</head>
+<body>
+
+<div class="menu-header">
+  <div class="wrap menu-header-in">
+    <svg class="sf-mark" viewBox="0 0 64 64" aria-hidden="true">
+      <g fill="none" stroke="#1783F2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 H10 Q6 6 6 10 V18"/><path d="M46 6 H54 Q58 6 58 10 V18"/><path d="M58 46 V54 Q58 58 54 58 H46"/></g>
+      <g fill="none" stroke="#0D2539" stroke-width="2.4"><rect x="17" y="13" width="11" height="11" rx="1.5"/><rect x="36" y="13" width="11" height="11" rx="1.5"/></g>
+      <g fill="#0D2539"><rect x="20.5" y="16.5" width="4" height="4"/><rect x="39.5" y="16.5" width="4" height="4"/></g>
+      <path d="M22 49 Q22 38 32 38 Q42 38 42 49 Z" fill="#0D2539"/><rect x="18" y="49.5" width="28" height="3" rx="1.5" fill="#0D2539"/>
+      <g stroke="#1783F2" stroke-width="2.8" stroke-linecap="round"><path d="M6 47 H15"/><path d="M3 52 H13"/><path d="M7 57 H16"/></g>
+    </svg>
+    <div class="head-text">
+      <div class="rname" id="headRestName">ScanFlow</div>
+      <div class="rcity" id="headRestCity"></div>
+    </div>
+    <div class="table-pill hidden" id="headTablePill"></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- Loading -->
+  <div class="state-card" id="loadingState">
+    <div class="spinner"></div>
+    <h1>Loading your menu…</h1>
+    <p>Just a moment.</p>
+  </div>
+
+  <!-- Invalid / error -->
+  <div class="state-card hidden" id="errorState">
+    <div class="emoji">🔍</div>
+    <h1 id="errorTitle">This QR code isn't valid</h1>
+    <p id="errorMsg">Ask a staff member for help, or try scanning the code on your table again.</p>
+  </div>
+
+  <!-- Menu -->
+  <div class="hidden" id="menuView">
+    <div class="veg-legend">
+      <span><span class="veg-dot v"></span>Veg</span>
+      <span><span class="veg-dot n"></span>Non-veg</span>
+    </div>
+    <div class="search-row">
+      <input type="text" id="searchInput" placeholder="Search the menu…">
+    </div>
+    <div class="cat-chips" id="catChips"></div>
+    <div id="menuList"></div>
+  </div>
+
+  <!-- Order status -->
+  <div class="hidden" id="statusView"></div>
+
+  <div class="foot">
+    Powered by <a href="https://scanflow.in" target="_blank" rel="noopener">ScanFlow</a> · Need help? Ask a staff member.
+  </div>
+</div>
+
+<!-- Sticky cart bar -->
+<div class="cart-bar" id="cartBar">
+  <div class="wrap cart-bar-in">
+    <button class="cart-bar-btn" id="openCartBtn" type="button">
+      <span><span class="count" id="cartCount">0</span>View cart</span>
+      <span id="cartTotalLabel">₹0</span>
+    </button>
+  </div>
+</div>
+
+<!-- Cart drawer -->
+<div class="backdrop" id="cartBackdrop"></div>
+<div class="drawer" id="cartDrawer">
+  <div class="drawer-head">
+    <h2>Your order</h2>
+    <button class="drawer-close" id="closeCartBtn" type="button" aria-label="Close">✕</button>
+  </div>
+  <div class="drawer-body" id="cartLines"></div>
+  <div class="drawer-foot">
+    <div class="total-row"><span>Total</span><span class="amt" id="cartTotalAmt">₹0</span></div>
+    <button class="place-btn" id="placeOrderBtn" type="button">Place order</button>
+    <p class="pay-note">No payment here — pay at your table when your order arrives.</p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+<script>
+let client;
+let tableInfo = null;      // { table_id, restaurant_id, table_number, restaurant_name, restaurant_city }
+let menuCache = [];
+let cart = {};              // menu_item_id -> { item, qty, notes }
+let activeCategory = 'All';
+let searchTerm = '';
+let currentOrderId = null;
+let orderChannel = null;
+let pollTimer = null;
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str == null ? '' : String(str);
+  return d.innerHTML;
+}
+function formatPrice(n){
+  const num = Number(n) || 0;
+  return '₹' + (Number.isInteger(num) ? num : num.toFixed(2));
+}
+function getToken(){
+  return new URLSearchParams(window.location.search).get('t');
+}
+function orderStorageKey(token){
+  return 'scanflow_order_' + token;
+}
+function showState(id){
+  ['loadingState','errorState','menuView','statusView'].forEach(s => {
+    document.getElementById(s).classList.toggle('hidden', s !== id);
+  });
+}
+function showError(title, msg){
+  document.getElementById('errorTitle').textContent = title;
+  document.getElementById('errorMsg').textContent = msg;
+  showState('errorState');
+}
+
+/* ── Boot ── */
+(async () => {
+  if (!scanflowConfigured) { scanflowShowNotConfigured(); return; }
+  client = getScanflowClient();
+
+  const token = getToken();
+  if (!token) {
+    showError('No table code found', 'This link is missing its table code. Please scan the QR code on your table.');
+    return;
+  }
+
+  const { data, error } = await client.rpc('lookup_table_by_token', { p_token: token });
+  if (error) {
+    console.error('ScanFlow: lookup_table_by_token failed', error);
+    showError('Something went wrong', 'We could not load your table right now. Please try again in a moment.');
+    return;
+  }
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) {
+    showError("This QR code isn't valid", 'Ask a staff member for help, or try scanning the code on your table again.');
+    return;
+  }
+  tableInfo = {
+    table_id: row.table_id,
+    restaurant_id: row.restaurant_id,
+    table_number: row.table_number,
+    restaurant_name: row.restaurant_name,
+    restaurant_city: row.restaurant_city
+  };
+
+  document.getElementById('headRestName').textContent = tableInfo.restaurant_name || 'ScanFlow';
+  document.getElementById('headRestCity').textContent = tableInfo.restaurant_city || '';
+  const pill = document.getElementById('headTablePill');
+  pill.textContent = 'TABLE ' + tableInfo.table_number;
+  pill.classList.remove('hidden');
+  document.title = tableInfo.restaurant_name ? tableInfo.restaurant_name + ' — Menu' : 'Menu — ScanFlow';
+
+  await loadMenu();
+
+  // If there's an active order for this exact table saved locally, jump
+  // straight to its status instead of the menu — but only if it's recent
+  // and still in flight (served/cancelled orders don't get restored).
+  const saved = readSavedOrder(token);
+  if (saved) {
+    const stillActive = await tryRestoreOrder(saved.orderId);
+    if (stillActive) return;
+  }
+
+  renderMenu();
+  showState('menuView');
+})();
+
+function readSavedOrder(token){
+  try {
+    const raw = localStorage.getItem(orderStorageKey(token));
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+}
+function saveOrder(token, orderId){
+  try { localStorage.setItem(orderStorageKey(token), JSON.stringify({ orderId, placedAt: Date.now() })); } catch {}
+}
+function clearSavedOrder(){
+  try { localStorage.removeItem(orderStorageKey(getToken())); } catch {}
+}
+
+async function tryRestoreOrder(orderId){
+  const { data: order, error } = await client.from('orders').select('*').eq('id', orderId).single();
+  if (error || !order || order.status === 'served' || order.status === 'cancelled') {
+    return false;
+  }
+  currentOrderId = orderId;
+  const { data: items } = await client.from('order_items').select('*').eq('order_id', orderId).order('created_at');
+  renderStatusView(order, items || []);
+  showState('statusView');
+  subscribeToOrder(orderId);
+  return true;
+}
+
+/* ── Menu loading & rendering ── */
+async function loadMenu(){
+  const { data, error } = await client
+    .from('menu_items')
+    .select('*')
+    .eq('restaurant_id', tableInfo.restaurant_id)
+    .eq('in_stock', true)
+    .order('category').order('name');
+  if (error) {
+    console.error('ScanFlow: could not load menu', error);
+    menuCache = [];
+    return;
+  }
+  menuCache = data || [];
+}
+
+function getCategories(){
+  const seen = [];
+  menuCache.forEach(m => {
+    const c = m.category || 'Mains';
+    if (!seen.includes(c)) seen.push(c);
+  });
+  return seen;
+}
+
+function renderChips(){
+  const cats = ['All', ...getCategories()];
+  document.getElementById('catChips').innerHTML = cats.map(c =>
+    `<button type="button" class="chip ${c === activeCategory ? 'active' : ''}" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`
+  ).join('');
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      activeCategory = chip.dataset.cat;
+      renderMenu();
+    });
+  });
+}
+
+function renderMenu(){
+  renderChips();
+  const list = document.getElementById('menuList');
+  const term = searchTerm.trim().toLowerCase();
+
+  let items = menuCache;
+  if (activeCategory !== 'All') items = items.filter(m => (m.category || 'Mains') === activeCategory);
+  if (term) items = items.filter(m => m.name.toLowerCase().includes(term) || (m.description || '').toLowerCase().includes(term));
+
+  if (!menuCache.length) {
+    list.innerHTML = '<p class="empty-menu">This menu is still being set up — check back soon, or ask a staff member.</p>';
+    return;
+  }
+  if (!items.length) {
+    list.innerHTML = '<p class="empty-menu">No dishes match — try a different search or category.</p>';
+    return;
+  }
+
+  const groups = {};
+  items.forEach(m => {
+    const c = m.category || 'Mains';
+    (groups[c] = groups[c] || []).push(m);
+  });
+
+  let html = '';
+  Object.keys(groups).forEach(cat => {
+    if (activeCategory === 'All') html += `<div class="cat-heading">${escapeHtml(cat)}</div>`;
+    html += groups[cat].map(itemCardHtml).join('');
+  });
+  list.innerHTML = html;
+
+  document.querySelectorAll('[data-add]').forEach(btn => {
+    btn.addEventListener('click', () => { changeQty(btn.dataset.add, 1); });
+  });
+  document.querySelectorAll('[data-inc]').forEach(btn => {
+    btn.addEventListener('click', () => { changeQty(btn.dataset.inc, 1); });
+  });
+  document.querySelectorAll('[data-dec]').forEach(btn => {
+    btn.addEventListener('click', () => { changeQty(btn.dataset.dec, -1); });
+  });
+}
+
+function itemCardHtml(item){
+  const qty = cart[item.id] ? cart[item.id].qty : 0;
+  const side = qty > 0
+    ? `<div class="qty-stepper">
+         <button type="button" data-dec="${item.id}">−</button>
+         <span class="qty-n">${qty}</span>
+         <button type="button" data-inc="${item.id}">+</button>
+       </div>`
+    : `<button type="button" class="add-btn" data-add="${item.id}">Add</button>`;
+  return `
+    <div class="item-card">
+      <div class="item-main">
+        <div class="item-top">
+          <span class="veg-dot ${item.is_veg ? 'v' : 'n'}"></span>
+          <span class="item-name">${escapeHtml(item.name)}</span>
+        </div>
+        ${item.description ? `<div class="item-desc">${escapeHtml(item.description)}</div>` : ''}
+        <div class="item-price">${formatPrice(item.price)}</div>
+      </div>
+      <div class="item-side">${side}</div>
+    </div>`;
+}
+
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  searchTerm = e.target.value;
+  renderMenu();
+});
+
+/* ── Cart ── */
+function changeQty(itemId, delta){
+  const item = menuCache.find(m => m.id === itemId);
+  if (!item) return;
+  const existing = cart[itemId] || { item, qty: 0, notes: '' };
+  existing.qty += delta;
+  if (existing.qty <= 0) delete cart[itemId];
+  else cart[itemId] = existing;
+  renderMenu();
+  renderCartBar();
+  if (document.getElementById('cartDrawer').classList.contains('open')) renderCartDrawer();
+}
+
+function cartArray(){
+  return Object.values(cart).sort((a, b) => a.item.name.localeCompare(b.item.name));
+}
+function cartTotal(){
+  return cartArray().reduce((sum, line) => sum + line.item.price * line.qty, 0);
+}
+function cartCount(){
+  return cartArray().reduce((sum, line) => sum + line.qty, 0);
+}
+
+function renderCartBar(){
+  const n = cartCount();
+  document.getElementById('cartBar').classList.toggle('show', n > 0);
+  document.getElementById('cartCount').textContent = n;
+  document.getElementById('cartTotalLabel').textContent = formatPrice(cartTotal());
+}
+
+function renderCartDrawer(){
+  const lines = cartArray();
+  const body = document.getElementById('cartLines');
+  if (!lines.length) {
+    body.innerHTML = '<p class="cart-empty">Your cart is empty — add a dish from the menu.</p>';
+  } else {
+    body.innerHTML = lines.map(line => `
+      <div class="cart-line" data-line="${line.item.id}">
+        <div class="cart-line-main">
+          <div class="cart-line-name">${escapeHtml(line.item.name)}</div>
+          <div class="cart-line-sub">${formatPrice(line.item.price)} each</div>
+          <button type="button" class="note-toggle" data-note-toggle="${line.item.id}">${line.notes ? 'Edit note' : '+ Add a note'}</button>
+          <textarea class="note-input ${line.notes ? '' : 'hidden'}" data-note-input="${line.item.id}" placeholder="e.g. no onions, extra spicy">${escapeHtml(line.notes || '')}</textarea>
+        </div>
+        <div class="cart-line-side">
+          <div class="cart-line-price">${formatPrice(line.item.price * line.qty)}</div>
+          <div class="qty-stepper">
+            <button type="button" data-dec="${line.item.id}">−</button>
+            <span class="qty-n">${line.qty}</span>
+            <button type="button" data-inc="${line.item.id}">+</button>
+          </div>
+        </div>
+      </div>
+    `).join('') + `
+      <div class="order-note">
+        <label for="overallNote">Any note for the kitchen?</label>
+        <textarea id="overallNote" placeholder="e.g. bringing a birthday cake, please serve after mains"></textarea>
+      </div>
+    `;
+  }
+  document.getElementById('cartTotalAmt').textContent = formatPrice(cartTotal());
+  document.getElementById('placeOrderBtn').disabled = !lines.length;
+
+  document.querySelectorAll('#cartLines [data-inc]').forEach(btn => btn.addEventListener('click', () => changeQty(btn.dataset.inc, 1)));
+  document.querySelectorAll('#cartLines [data-dec]').forEach(btn => btn.addEventListener('click', () => changeQty(btn.dataset.dec, -1)));
+  document.querySelectorAll('[data-note-toggle]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.noteToggle;
+      const input = document.querySelector(`[data-note-input="${id}"]`);
+      input.classList.toggle('hidden');
+      if (!input.classList.contains('hidden')) input.focus();
+    });
+  });
+  document.querySelectorAll('[data-note-input]').forEach(ta => {
+    ta.addEventListener('input', () => {
+      const id = ta.dataset.noteInput;
+      if (cart[id]) cart[id].notes = ta.value;
+    });
+  });
+}
+
+function openCart(){
+  renderCartDrawer();
+  document.getElementById('cartBackdrop').classList.add('open');
+  document.getElementById('cartDrawer').classList.add('open');
+}
+function closeCart(){
+  document.getElementById('cartBackdrop').classList.remove('open');
+  document.getElementById('cartDrawer').classList.remove('open');
+}
+document.getElementById('openCartBtn').addEventListener('click', openCart);
+document.getElementById('closeCartBtn').addEventListener('click', closeCart);
+document.getElementById('cartBackdrop').addEventListener('click', closeCart);
+
+/* ── Placing the order ── */
+document.getElementById('placeOrderBtn').addEventListener('click', async () => {
+  const lines = cartArray();
+  if (!lines.length) return;
+  const btn = document.getElementById('placeOrderBtn');
+  btn.disabled = true; btn.textContent = 'Placing your order…';
+
+  try {
+    const overallNote = document.getElementById('overallNote') ? document.getElementById('overallNote').value.trim() : '';
+    const { data: order, error: orderErr } = await client
+      .from('orders')
+      .insert({ table_id: tableInfo.table_id, note: overallNote || null })
+      .select()
+      .single();
+    if (orderErr) throw orderErr;
+
+    const itemRows = lines.map(line => ({
+      order_id: order.id,
+      menu_item_id: line.item.id,
+      item_name: line.item.name,
+      item_price: line.item.price,
+      quantity: line.qty,
+      notes: line.notes || null
+    }));
+    const { error: itemsErr } = await client.from('order_items').insert(itemRows);
+    if (itemsErr) throw itemsErr;
+
+    cart = {};
+    renderCartBar();
+    closeCart();
+    saveOrder(getToken(), order.id);
+    currentOrderId = order.id;
+    renderStatusView(order, itemRows);
+    showState('statusView');
+    subscribeToOrder(order.id);
+  } catch (err) {
+    console.error('ScanFlow: could not place order', err);
+    alert("Sorry, we couldn't send your order — please try again in a moment.");
+  } finally {
+    btn.disabled = false; btn.textContent = 'Place order';
+  }
+});
+
+/* ── Order status ── */
+const STATUS_COPY = {
+  pending:    { icon: '🕐', title: 'Order received!',        sub: "We've got it — the kitchen will start on it shortly." },
+  preparing:  { icon: '👨‍🍳', title: 'Being prepared',         sub: 'Your food is being cooked right now.' },
+  ready:      { icon: '🔔', title: 'Ready to serve',          sub: 'Your order is ready — it will be brought to your table shortly.' },
+  served:     { icon: '✅', title: 'Enjoy your meal!',         sub: 'Your order has been served. Thanks for dining with us.' },
+  cancelled:  { icon: '⚠️', title: 'Order cancelled',          sub: 'This order was cancelled. Ask a staff member if you have questions.' }
+};
+const STATUS_STEPS = ['pending', 'preparing', 'ready', 'served'];
+
+function renderStatusView(order, items){
+  const copy = STATUS_COPY[order.status] || STATUS_COPY.pending;
+  const stepIndex = STATUS_STEPS.indexOf(order.status);
+  const isCancelled = order.status === 'cancelled';
+
+  const steps = STATUS_STEPS.map((s, i) => {
+    const cls = isCancelled ? 'cancelled-step' : (i <= stepIndex ? 'done' : '');
+    return `<div class="step ${cls}"></div>`;
+  }).join('');
+
+  const recap = items.map(it => `
+    <div class="recap-line">
+      <span class="n">${it.quantity} × ${escapeHtml(it.item_name)}</span>
+      <span class="p">${formatPrice(it.item_price * it.quantity)}</span>
+    </div>
+  `).join('');
+  const total = items.reduce((sum, it) => sum + it.item_price * it.quantity, 0);
+
+  document.getElementById('statusView').innerHTML = `
+    <div class="status-card">
+      <div class="status-icon ${order.status}">${copy.icon}</div>
+      <div class="status-title">${copy.title}</div>
+      <div class="status-sub">${copy.sub}</div>
+      ${isCancelled ? '' : `<div class="status-steps">${steps}</div>`}
+      <div class="recap">
+        ${recap}
+        <div class="recap-line" style="border-top:1px solid var(--border);margin-top:6px;padding-top:10px;font-weight:700;">
+          <span>Total</span><span class="p">${formatPrice(total)}</span>
+        </div>
+      </div>
+      <button type="button" class="order-more-btn" id="orderMoreBtn">Order more</button>
+    </div>
+  `;
+  document.getElementById('orderMoreBtn').addEventListener('click', () => {
+    unsubscribeFromOrder();
+    renderMenu();
+    showState('menuView');
+  });
+}
+
+function subscribeToOrder(orderId){
+  unsubscribeFromOrder();
+  stopPolling();
+  orderChannel = client
+    .channel('order-status-' + orderId)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${orderId}` }, (payload) => {
+      refreshStatusView(orderId, payload.new);
+    })
+    .subscribe((status) => {
+      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+        startPolling(orderId);
+      } else if (status === 'SUBSCRIBED') {
+        stopPolling();
+      }
+    });
+}
+function unsubscribeFromOrder(){
+  if (orderChannel) { client.removeChannel(orderChannel); orderChannel = null; }
+  stopPolling();
+}
+function startPolling(orderId){
+  if (pollTimer) return;
+  pollTimer = setInterval(async () => {
+    const { data: order } = await client.from('orders').select('*').eq('id', orderId).single();
+    if (order) refreshStatusView(orderId, order);
+  }, 8000);
+}
+function stopPolling(){
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+async function refreshStatusView(orderId, order){
+  if (orderId !== currentOrderId) return;
+  const { data: items } = await client.from('order_items').select('*').eq('order_id', orderId).order('created_at');
+  renderStatusView(order, items || []);
+  if (order.status === 'served' || order.status === 'cancelled') {
+    clearSavedOrder();
+    unsubscribeFromOrder();
+  }
+}
+
+window.addEventListener('beforeunload', unsubscribeFromOrder);
+</script>
+</body>
+</html>
