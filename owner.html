@@ -815,13 +815,12 @@ document.getElementById('addWaiterForm').addEventListener('submit', async (e) =>
 
 /* ── Tables & QR ── */
 // Each table's canvas is a fully self-contained, print-ready card — not
-// just a bare QR square. Restaurant name, a clear instruction, the QR
-// itself (high error-correction so it survives lamination scuffs), a big
-// table-number pill, and a ScanFlow footer mark are all drawn together
-// so Download / Print produce exactly what's on screen. Sized 640×900 —
-// the same ratio as an A6 card — so a plain "print, then trim to the
-// dashed border" workflow lines up with a real paper size.
-const CARD_W = 640, CARD_H = 900;
+// just a bare QR square. Restaurant name, a dining icon badge, the QR
+// itself (high error-correction so it survives lamination scuffs) framed
+// with viewfinder-style corner brackets, a table-number pill, a thank-you
+// line, and a ScanFlow footer mark are all drawn together so Download /
+// Print produce exactly what's on screen.
+const CARD_W = 640, CARD_H = 1050;
 const INK = '#0D2539', INK_SOFT = '#46586B', MUTED = '#8493A6', BLUE = '#1783F2', BORDER = '#E2E9F2';
 
 function renderTableCard(canvas, table){
@@ -830,7 +829,7 @@ function renderTableCard(canvas, table){
   const ctx = canvas.getContext('2d');
 
   const qrCanvas = document.createElement('canvas');
-  const QR_SIZE = 380;
+  const QR_SIZE = 320;
   const finish = () => drawTableCard(ctx, table, qrCanvas);
 
   if (window.QRCode) {
@@ -881,7 +880,6 @@ function drawRoundedRect(ctx, x, y, w, h, r){
   ctx.closePath();
 }
 
-
 // Shrinks font size until text fits maxWidth, so long restaurant names or
 // table names (e.g. "Rooftop Patio 12") never overflow or get clipped.
 function fitFont(ctx, text, maxWidth, maxSize, minSize, weight, family){
@@ -894,92 +892,230 @@ function fitFont(ctx, text, maxWidth, maxSize, minSize, weight, family){
   return size;
 }
 
+// Simplified fork + knife pictogram, drawn with plain paths (no external
+// icon font) so it rasterizes identically no matter whose browser renders
+// the download.
+function drawForkKnifeIcon(ctx, cx, cy){
+  ctx.save();
+  ctx.strokeStyle = BLUE; ctx.fillStyle = BLUE;
+  ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const forkX = cx - 9;
+  ctx.beginPath();
+  ctx.moveTo(forkX, cy + 15); ctx.lineTo(forkX, cy - 12);
+  ctx.moveTo(forkX - 6, cy - 22); ctx.lineTo(forkX - 6, cy - 10);
+  ctx.moveTo(forkX, cy - 24); ctx.lineTo(forkX, cy - 10);
+  ctx.moveTo(forkX + 6, cy - 22); ctx.lineTo(forkX + 6, cy - 10);
+  ctx.stroke();
+  const knifeX = cx + 9;
+  ctx.beginPath();
+  ctx.moveTo(knifeX, cy + 15); ctx.lineTo(knifeX, cy - 5);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(knifeX - 5, cy - 5);
+  ctx.lineTo(knifeX + 5, cy - 5);
+  ctx.lineTo(knifeX + 2, cy - 24);
+  ctx.lineTo(knifeX - 2, cy - 24);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+// Small tabletop pictogram used inside the blue table-number pill.
+function drawTableIcon(ctx, cx, cy, size){
+  ctx.fillStyle = '#FFFFFF';
+  const topW = size, topH = size * 0.24;
+  drawRoundedRect(ctx, cx - topW / 2, cy - size * 0.34, topW, topH, topH / 2);
+  ctx.fill();
+  const legW = size * 0.14, legH = size * 0.4;
+  drawRoundedRect(ctx, cx - topW / 2 + topW * 0.1, cy - size * 0.34 + topH, legW, legH, legW / 2);
+  ctx.fill();
+  drawRoundedRect(ctx, cx + topW / 2 - topW * 0.1 - legW, cy - size * 0.34 + topH, legW, legH, legW / 2);
+  ctx.fill();
+}
+
+// Camera-viewfinder-style corner brackets framing the QR image.
+function drawScanBrackets(ctx, qrX, qrY, qrSize){
+  const m = 14, armLen = 28;
+  const bx0 = qrX - m, by0 = qrY - m, bx1 = qrX + qrSize + m, by1 = qrY + qrSize + m;
+  ctx.strokeStyle = BLUE; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath(); ctx.moveTo(bx0, by0 + armLen); ctx.lineTo(bx0, by0); ctx.lineTo(bx0 + armLen, by0); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(bx1 - armLen, by0); ctx.lineTo(bx1, by0); ctx.lineTo(bx1, by0 + armLen); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(bx0, by1 - armLen); ctx.lineTo(bx0, by1); ctx.lineTo(bx0 + armLen, by1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(bx1 - armLen, by1); ctx.lineTo(bx1, by1); ctx.lineTo(bx1, by1 - armLen); ctx.stroke();
+}
+
+// Small filled heart, used above the thank-you line.
+function drawHeart(ctx, cx, cy, size){
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(size / 24, size / 24);
+  ctx.beginPath();
+  ctx.moveTo(0, 6);
+  ctx.bezierCurveTo(0, 3, -5, -2, -9, -2);
+  ctx.bezierCurveTo(-14, -2, -14, 4, -14, 4);
+  ctx.bezierCurveTo(-14, 8, -10, 13, 0, 19);
+  ctx.bezierCurveTo(10, 13, 14, 8, 14, 4);
+  ctx.bezierCurveTo(14, 4, 14, -2, 9, -2);
+  ctx.bezierCurveTo(5, -2, 0, 3, 0, 6);
+  ctx.closePath();
+  ctx.fillStyle = BLUE;
+  ctx.fill();
+  ctx.restore();
+}
+
+// Sparse, deterministic scatter of faint dots in a corner — purely a
+// decorative flourish, fixed pattern so it never looks glitchy.
+function drawCornerDots(ctx, x0, y0, cols, rows, spacing, dirX, dirY){
+  ctx.fillStyle = 'rgba(23,131,242,0.16)';
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      if ((row + col) % 2 === 0) continue;
+      const x = x0 + dirX * col * spacing;
+      const y = y0 + dirY * row * spacing;
+      ctx.beginPath();
+      ctx.arc(x, y, 2.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+}
+
 function drawTableCard(ctx, table, qrCanvas){
   const W = CARD_W, H = CARD_H;
   ctx.clearRect(0, 0, W, H);
 
-  // Card background + border
+  // Card background
   ctx.fillStyle = '#FFFFFF';
-  drawRoundedRect(ctx, 0, 0, W, H, 28);
+  drawRoundedRect(ctx, 0, 0, W, H, 36);
   ctx.fill();
-  ctx.lineWidth = 2; ctx.strokeStyle = BORDER;
-  drawRoundedRect(ctx, 1, 1, W - 2, H - 2, 27);
-  ctx.stroke();
 
-  // Top brand accent bar — clip to the card's own rounded-rect path (which
-  // is a valid shape at this size) so only the top strip's corners pick up
-  // the same 28px radius; a standalone 14px-tall bar is too short to have
-  // a 28px radius of its own.
+  // Decorative corner dot flourishes (drawn before the border/content so
+  // they sit quietly in the background)
   ctx.save();
-  drawRoundedRect(ctx, 0, 0, W, H, 28);
+  drawRoundedRect(ctx, 0, 0, W, H, 36);
   ctx.clip();
-  ctx.fillStyle = BLUE;
-  ctx.fillRect(0, 0, W, 14);
+  drawCornerDots(ctx, W - 30, 30, 6, 6, 13, -1, 1);
+  drawCornerDots(ctx, 30, H - 210, 6, 6, 13, 1, 1);
   ctx.restore();
+
+  // Thick brand-blue border frame
+  ctx.lineWidth = 14; ctx.strokeStyle = BLUE;
+  drawRoundedRect(ctx, 7, 7, W - 14, H - 14, 30);
+  ctx.stroke();
 
   ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
 
+  // Dining icon badge
+  const iconCenterY = 86, iconR = 40;
+  ctx.beginPath(); ctx.arc(W / 2, iconCenterY, iconR, 0, Math.PI * 2);
+  ctx.fillStyle = '#FFFFFF'; ctx.fill();
+  ctx.lineWidth = 3; ctx.strokeStyle = BLUE; ctx.stroke();
+  drawForkKnifeIcon(ctx, W / 2, iconCenterY);
+
+  // Restaurant name
   const restaurantName = (myRestaurant && myRestaurant.name) ? myRestaurant.name : 'Your Restaurant';
-  const nameSize = fitFont(ctx, restaurantName, W - 100, 38, 22, '700', "'Fraunces', Georgia, serif");
+  const nameSize = fitFont(ctx, restaurantName, W - 120, 42, 24, '700', "'Fraunces', Georgia, serif");
   ctx.font = `700 ${nameSize}px 'Fraunces', Georgia, serif`;
   ctx.fillStyle = INK;
-  ctx.fillText(restaurantName, W / 2, 82);
+  ctx.fillText(restaurantName, W / 2, 178);
 
-  ctx.font = `500 17px 'Inter', system-ui, sans-serif`;
+  // Subtitle flanked by dot-tipped lines
+  const subtitle = 'Scan to view the menu & order';
+  ctx.font = `500 16px 'Inter', system-ui, sans-serif`;
+  const subW = ctx.measureText(subtitle).width;
+  const lineY = 205, lineLen = 60, lineGap = 16, dotR = 3;
+  ctx.strokeStyle = BORDER; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(W / 2 - subW / 2 - lineGap - lineLen, lineY);
+  ctx.lineTo(W / 2 - subW / 2 - lineGap, lineY);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(W / 2 + subW / 2 + lineGap, lineY);
+  ctx.lineTo(W / 2 + subW / 2 + lineGap + lineLen, lineY);
+  ctx.stroke();
+  ctx.fillStyle = BLUE;
+  ctx.beginPath(); ctx.arc(W / 2 - subW / 2 - lineGap - lineLen - dotR - 6, lineY, dotR, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(W / 2 + subW / 2 + lineGap + lineLen + dotR + 6, lineY, dotR, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = INK_SOFT;
-  ctx.fillText('Scan to view the menu & order', W / 2, 112);
+  ctx.fillText(subtitle, W / 2, 210);
 
-  // QR panel
-  const panelSize = 420, panelX = (W - panelSize) / 2, panelY = 145;
+  // QR panel, with a soft canvas-drawn shadow so it's baked into the
+  // downloaded file (a CSS shadow on-screen would otherwise vanish on export)
+  const panelSize = 400, panelX = (W - panelSize) / 2, panelY = 248;
+  ctx.save();
+  ctx.shadowColor = 'rgba(13,37,57,0.18)'; ctx.shadowBlur = 24; ctx.shadowOffsetY = 10;
   ctx.fillStyle = '#FFFFFF';
-  drawRoundedRect(ctx, panelX, panelY, panelSize, panelSize, 20);
+  drawRoundedRect(ctx, panelX, panelY, panelSize, panelSize, 24);
   ctx.fill();
+  ctx.restore();
   ctx.lineWidth = 1.5; ctx.strokeStyle = BORDER;
-  drawRoundedRect(ctx, panelX, panelY, panelSize, panelSize, 20);
+  drawRoundedRect(ctx, panelX, panelY, panelSize, panelSize, 24);
   ctx.stroke();
 
+  const qrSize = 320, qrX = panelX + (panelSize - qrSize) / 2, qrY = panelY + (panelSize - qrSize) / 2;
   if (qrCanvas.__failed) {
     ctx.font = `600 16px 'Inter', system-ui, sans-serif`;
     ctx.fillStyle = MUTED;
     ctx.fillText('QR failed to load —', W / 2, panelY + panelSize / 2 - 6);
     ctx.fillText('refresh and try again', W / 2, panelY + panelSize / 2 + 18);
   } else {
-    const qrDrawSize = panelSize - 40;
-    ctx.drawImage(qrCanvas, panelX + 20, panelY + 20, qrDrawSize, qrDrawSize);
+    ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
+    drawScanBrackets(ctx, qrX, qrY, qrSize);
   }
 
-  // Table number pill — the thing staff and customers actually look for
-  const pillY = panelY + panelSize + 34;
+  // Table number pill with a small tabletop icon
+  const pillY = panelY + panelSize + 36;
   const tableLabel = `TABLE ${table.table_number}`;
-  const pillFontSize = fitFont(ctx, tableLabel, W - 160, 30, 18, '700', "'JetBrains Mono', monospace");
+  const pillFontSize = fitFont(ctx, tableLabel, W - 220, 26, 16, '700', "'JetBrains Mono', monospace");
   ctx.font = `700 ${pillFontSize}px 'JetBrains Mono', monospace`;
   const textW = ctx.measureText(tableLabel).width;
-  const pillPadX = 28, pillH = pillFontSize + 26;
-  const pillW = textW + pillPadX * 2;
+  const iconW = 20, iconGap = 12, dividerGap = 12, dividerW = 2;
+  const pillH = Math.max(pillFontSize + 30, 56);
+  const pillPadX = 26;
+  const contentW = iconW + iconGap + dividerW + dividerGap * 2 + textW;
+  const pillW = contentW + pillPadX * 2;
   const pillX = (W - pillW) / 2;
   ctx.fillStyle = BLUE;
   drawRoundedRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
   ctx.fill();
-  ctx.fillStyle = '#FFFFFF';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(tableLabel, W / 2, pillY + pillH / 2 + 1);
-  ctx.textBaseline = 'alphabetic';
+  drawTableIcon(ctx, pillX + pillPadX + iconW / 2, pillY + pillH / 2, iconW);
+  const dividerX = pillX + pillPadX + iconW + iconGap;
+  ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = dividerW;
+  ctx.beginPath(); ctx.moveTo(dividerX, pillY + 14); ctx.lineTo(dividerX, pillY + pillH - 14); ctx.stroke();
+  ctx.fillStyle = '#FFFFFF'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillText(tableLabel, dividerX + dividerGap, pillY + pillH / 2 + 1);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
 
-  // Divider
-  const dividerY = pillY + pillH + 40;
+  // Divider with a small rotated-square accent in the middle
+  const dividerY = pillY + pillH + 48;
   ctx.strokeStyle = BORDER; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(60, dividerY); ctx.lineTo(W - 60, dividerY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(60, dividerY); ctx.lineTo(W / 2 - 14, dividerY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W / 2 + 14, dividerY); ctx.lineTo(W - 60, dividerY); ctx.stroke();
+  ctx.save();
+  ctx.translate(W / 2, dividerY); ctx.rotate(Math.PI / 4);
+  ctx.fillStyle = BLUE; ctx.fillRect(-3.5, -3.5, 7, 7);
+  ctx.restore();
+
+  // Heart + thank-you message
+  const heartY = dividerY + 34;
+  drawHeart(ctx, W / 2, heartY, 20);
+  ctx.font = `700 20px 'Inter', system-ui, sans-serif`;
+  ctx.fillStyle = INK;
+  ctx.fillText('Thank you for dining with us!', W / 2, heartY + 40);
+  ctx.font = `400 15px 'Inter', system-ui, sans-serif`;
+  ctx.fillStyle = MUTED;
+  ctx.fillText('We hope you enjoy your experience.', W / 2, heartY + 64);
 
   // Footer branding — also doubles as free ScanFlow marketing on every
   // table of every restaurant that prints one of these.
+  const logoTopY = heartY + 90;
   if (scanflowMarkReady) {
     const logoDrawW = 170;
     const logoDrawH = logoDrawW * (scanflowMark.height / scanflowMark.width);
-    ctx.drawImage(scanflowMark, (W - logoDrawW) / 2, dividerY + 24, logoDrawW, logoDrawH);
+    ctx.drawImage(scanflowMark, (W - logoDrawW) / 2, logoTopY, logoDrawW, logoDrawH);
   } else {
     ctx.font = `600 15px 'Inter', system-ui, sans-serif`;
     ctx.fillStyle = MUTED;
-    ctx.fillText('Powered by ScanFlow', W / 2, dividerY + 50);
+    ctx.fillText('Powered by ScanFlow', W / 2, logoTopY + 20);
   }
 }
 
