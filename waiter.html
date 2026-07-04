@@ -42,6 +42,9 @@ button{font-family:inherit;}
 .who .email{font-size:13px;color:var(--ink-soft);}
 .signout{font-size:13px;font-weight:600;color:#fff;background:var(--ink);padding:9px 16px;border-radius:10px;border:none;cursor:pointer;}
 .signout:hover{background:#16293C;}
+.bell-btn{width:36px;height:36px;border-radius:10px;border:1.5px solid var(--border);background:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.bell-btn:hover{border-color:var(--blue);}
+.bell-btn.off{opacity:.55;}
 
 /* ── Page head ── */
 .main{padding:32px 0 60px;}
@@ -89,6 +92,8 @@ button{font-family:inherit;}
 .order-actions{display:flex;gap:8px;align-items:center;}
 .advance-btn{flex:1;background:var(--ink);color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;}
 .advance-btn:disabled{opacity:.6;cursor:default;}
+.print-link{font-size:14px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;cursor:pointer;padding:8px 10px;flex-shrink:0;}
+.print-link:hover{border-color:var(--blue);}
 .cancel-link{font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;padding:6px 4px;}
 .cancel-link:hover{color:var(--red);}
 .served-recap{font-size:12px;color:var(--ink-soft);}
@@ -96,6 +101,23 @@ button{font-family:inherit;}
 .toggle-row{margin-top:26px;}
 .toggle-btn{font-size:13px;font-weight:600;color:var(--blue);background:var(--blue-soft);border:none;border-radius:10px;padding:9px 16px;cursor:pointer;}
 .hidden{display:none !important;}
+.print-only{display:none;}
+
+/* ── Kitchen ticket (print only) ── */
+@media print{
+  body > *{display:none !important;}
+  #printTicket{display:block !important;font-family:'JetBrains Mono',monospace;color:#000;width:300px;margin:0;padding:14px;}
+  .ticket-rest{font-weight:700;font-size:16px;text-align:center;}
+  .ticket-label{text-align:center;font-size:11px;letter-spacing:2px;margin:4px 0 10px;}
+  .ticket-table{font-size:22px;font-weight:700;text-align:center;margin-bottom:4px;}
+  .ticket-meta{font-size:11px;text-align:center;color:#333;margin-bottom:8px;}
+  #printTicket hr{border:none;border-top:1px dashed #000;margin:9px 0;}
+  .ticket-item{font-size:13.5px;margin-bottom:5px;}
+  .ticket-item .q{font-weight:700;margin-right:6px;}
+  .ticket-item-note{font-size:11px;margin:0 0 5px 20px;font-style:italic;}
+  .ticket-note{font-size:12px;margin-top:6px;line-height:1.5;}
+  .ticket-ref{font-size:10px;text-align:center;color:#555;margin-top:12px;}
+}
 </style>
 </head>
 <body>
@@ -112,6 +134,7 @@ button{font-family:inherit;}
   </a>
   <div class="who">
     <span class="live-dot" id="liveDot" title="Live connection"></span>
+    <button class="bell-btn" id="bellBtn" type="button" title="Toggle sound for new orders">🔔</button>
     <span class="email" id="whoEmail"></span>
     <button class="signout" id="signoutBtn">Sign out</button>
   </div>
@@ -154,21 +177,87 @@ button{font-family:inherit;}
 
 </div></div>
 
+<!-- Kitchen ticket — only ever visible in the print stylesheet above -->
+<div id="printTicket" class="print-only">
+  <div class="ticket-rest" id="ticketRestName"></div>
+  <div class="ticket-label">KITCHEN TICKET</div>
+  <div class="ticket-table" id="ticketTable"></div>
+  <div class="ticket-meta" id="ticketMeta"></div>
+  <hr>
+  <div id="ticketItems"></div>
+  <div id="ticketNote"></div>
+  <hr>
+  <div class="ticket-ref" id="ticketRef"></div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js"></script>
 <script>
 let client;
 let myProfile;
+let myRestaurantName = '';
 let ordersCache = [];
 let updatingIds = new Set();
 let pollTimer = null;
 let servedShown = false;
+let hasLoadedOnce = false;
 
 function escapeHtml(str){
   const d = document.createElement('div');
   d.textContent = str == null ? '' : String(str);
   return d.innerHTML;
 }
+
+/* ── New-order sound alert ──
+   Browsers block audio until the page has seen a user gesture, so we
+   quietly create/resume the AudioContext on the first click/touch/key
+   anywhere, and separately let the waiter see + toggle the preference
+   via the bell button (persisted in localStorage). Synthesized with the
+   Web Audio API — no audio file to embed or fetch. */
+let soundEnabled = localStorage.getItem('scanflow_waiter_sound') !== 'off';
+let audioCtx = null;
+
+function unlockAudio(){
+  if (!audioCtx) {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    try { audioCtx = new Ctx(); } catch { return; }
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+}
+['click', 'touchstart', 'keydown'].forEach(evt => {
+  document.addEventListener(evt, unlockAudio, { once: true, passive: true });
+});
+
+function playAlertSound(){
+  if (!soundEnabled || !audioCtx || audioCtx.state !== 'running') return;
+  const now = audioCtx.currentTime;
+  [880, 1108].forEach((freq, i) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    const t = now + i * 0.15;
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.22, t + 0.02);
+    gain.gain.linearRampToValueAtTime(0, t + 0.2);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(t);
+    osc.stop(t + 0.22);
+  });
+}
+function updateBellBtn(){
+  const btn = document.getElementById('bellBtn');
+  btn.textContent = soundEnabled ? '🔔' : '🔕';
+  btn.classList.toggle('off', !soundEnabled);
+}
+document.getElementById('bellBtn').addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  localStorage.setItem('scanflow_waiter_sound', soundEnabled ? 'on' : 'off');
+  updateBellBtn();
+  if (soundEnabled) unlockAudio();
+});
+updateBellBtn();
 
 const STATUS_META = {
   pending:   { next: 'preparing', actionLabel: 'Start preparing' },
@@ -207,7 +296,10 @@ function isRecent(iso, withinMs){
   }
 
   const { data: restaurant } = await client.from('restaurants').select('*').eq('id', profile.restaurant_id).single();
-  if (restaurant) document.getElementById('restName').textContent = '— ' + restaurant.name;
+  if (restaurant) {
+    myRestaurantName = restaurant.name;
+    document.getElementById('restName').textContent = '— ' + restaurant.name;
+  }
 
   document.getElementById('queueView').classList.remove('hidden');
   await loadOrders();
@@ -235,7 +327,20 @@ async function loadOrders(){
     setLiveDot(false);
     return;
   }
-  ordersCache = data || [];
+  const newData = data || [];
+
+  // Alert only for orders that are pending now but weren't in the
+  // previous fetch — never on the first load (that would just be every
+  // existing order alerting at once), and never twice for the same order
+  // even though an order's items insert triggers a second refetch.
+  if (hasLoadedOnce) {
+    const previouslyPending = new Set(ordersCache.filter(o => o.status === 'pending').map(o => o.id));
+    const justArrived = newData.some(o => o.status === 'pending' && !previouslyPending.has(o.id));
+    if (justArrived) playAlertSound();
+  }
+
+  ordersCache = newData;
+  hasLoadedOnce = true;
   renderQueue();
 }
 
@@ -316,6 +421,7 @@ function orderCardHtml(order){
     actionsHtml = `
       <div class="order-actions">
         <button type="button" class="advance-btn" data-advance="${order.id}" data-next="${meta.next}">${meta.actionLabel}</button>
+        <button type="button" class="print-link" data-print="${order.id}" title="Print kitchen ticket">🖨️</button>
         <button type="button" class="cancel-link" data-cancel="${order.id}">Cancel</button>
       </div>`;
   } else {
@@ -345,6 +451,33 @@ function bindActionButtons(){
       if (confirm('Cancel this order?')) advanceStatus(btn.dataset.cancel, 'cancelled', btn);
     });
   });
+  document.querySelectorAll('[data-print]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const order = ordersCache.find(o => o.id === btn.dataset.print);
+      if (order) printTicket(order);
+    });
+  });
+}
+
+/* ── Kitchen ticket printing ── */
+function printTicket(order){
+  const tableNumber = order.table && order.table.table_number != null ? order.table.table_number : '—';
+  const items = (order.order_items || []).slice().sort((a, b) => (a.item_name || '').localeCompare(b.item_name || ''));
+
+  document.getElementById('ticketRestName').textContent = myRestaurantName || 'ScanFlow';
+  document.getElementById('ticketTable').textContent = 'TABLE ' + tableNumber;
+  document.getElementById('ticketMeta').textContent = new Date(order.created_at).toLocaleString('en-IN', {
+    day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+  });
+  document.getElementById('ticketItems').innerHTML = items.map(it => `
+    <div class="ticket-item"><span class="q">${it.quantity}×</span>${escapeHtml(it.item_name)}</div>
+    ${it.notes ? `<div class="ticket-item-note">${escapeHtml(it.notes)}</div>` : ''}
+  `).join('') || '<div class="ticket-item">No items recorded</div>';
+  document.getElementById('ticketNote').innerHTML = order.note
+    ? `<div class="ticket-note"><b>Note:</b> ${escapeHtml(order.note)}</div>` : '';
+  document.getElementById('ticketRef').textContent = 'Order ref: ' + order.id.slice(0, 8).toUpperCase();
+
+  window.print();
 }
 
 /* ── Actions ── */

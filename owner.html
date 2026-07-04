@@ -230,7 +230,19 @@ input.inline-input{width:80px;}
       <p class="card-sub">Where your menu is concentrated.</p>
       <div id="categoryBars"><p style="color:var(--muted);font-size:13.5px;">Loading…</p></div>
     </div>
-    <div class="note">Order and sales analytics will appear here once the waiter order tab and customer ordering page are live — no orders exist yet to report on.</div>
+
+    <div class="card" id="orderStatsCard" style="display:none;">
+      <h2>Today's orders</h2>
+      <p class="card-sub">From your QR menu and waiter tab, updated each time you open this page.</p>
+      <div class="stat-grid" style="margin-top:14px;">
+        <div class="stat-card blue"><div class="num" id="statOrdersToday">—</div><div class="lbl">Orders today</div></div>
+        <div class="stat-card green"><div class="num" id="statRevenueToday">—</div><div class="lbl">Revenue today</div></div>
+        <div class="stat-card"><div class="num" id="statAvgOrder">—</div><div class="lbl">Avg. order value</div></div>
+        <div class="stat-card red"><div class="num" id="statCancelledToday">—</div><div class="lbl">Cancelled today</div></div>
+      </div>
+      <div id="topDishesToday" style="margin-top:20px;"></div>
+    </div>
+    <div class="note" id="orderStatsEmptyNote">Order and sales analytics will appear here once customers start ordering through your QR codes — no orders exist yet to report on.</div>
   </div>
 
   <!-- ══ MENU ══ -->
@@ -1264,6 +1276,72 @@ function renderDashboardStats(){
   }).join('') : '<p style="color:var(--muted);font-size:13.5px;">Add a dish to see this fill in.</p>';
 }
 
+/* ── Order stats (real data, once customers start ordering) ── */
+async function loadOrderStats(){
+  // Capped at the 500 most recent orders — plenty for a single
+  // restaurant's dashboard; if you ever outgrow that, this is the first
+  // place to add proper date-range pagination.
+  const { data, error } = await client
+    .from('orders')
+    .select('*, order_items(*)')
+    .eq('restaurant_id', myProfile.restaurant_id)
+    .order('created_at', { ascending: false })
+    .limit(500);
+  if (error) {
+    console.error('ScanFlow: could not load order stats', error);
+    return;
+  }
+  renderOrderStats(data || []);
+}
+
+function renderOrderStats(orders){
+  const card = document.getElementById('orderStatsCard');
+  const emptyNote = document.getElementById('orderStatsEmptyNote');
+
+  if (!orders.length) {
+    card.style.display = 'none';
+    emptyNote.style.display = 'block';
+    return;
+  }
+  card.style.display = 'block';
+  emptyNote.style.display = 'none';
+
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todaysOrders = orders.filter(o => new Date(o.created_at) >= todayStart);
+  const cancelledToday = todaysOrders.filter(o => o.status === 'cancelled');
+  const countedToday = todaysOrders.filter(o => o.status !== 'cancelled');
+
+  const orderTotal = (o) => (o.order_items || []).reduce((sum, it) => sum + Number(it.item_price) * it.quantity, 0);
+  const revenueToday = countedToday.reduce((sum, o) => sum + orderTotal(o), 0);
+  const avgOrder = countedToday.length ? revenueToday / countedToday.length : 0;
+
+  document.getElementById('statOrdersToday').textContent = todaysOrders.length;
+  document.getElementById('statRevenueToday').textContent = '₹' + Math.round(revenueToday).toLocaleString('en-IN');
+  document.getElementById('statAvgOrder').textContent = countedToday.length ? '₹' + Math.round(avgOrder).toLocaleString('en-IN') : '—';
+  document.getElementById('statCancelledToday').textContent = cancelledToday.length;
+
+  const dishTotals = {};
+  countedToday.forEach(o => {
+    (o.order_items || []).forEach(it => {
+      dishTotals[it.item_name] = (dishTotals[it.item_name] || 0) + it.quantity;
+    });
+  });
+  const topDishes = Object.entries(dishTotals).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const maxQty = Math.max(1, ...topDishes.map(d => d[1]));
+  const dishesEl = document.getElementById('topDishesToday');
+  if (!topDishes.length) {
+    dishesEl.innerHTML = '<p style="color:var(--muted);font-size:13.5px;">No dishes ordered yet today.</p>';
+  } else {
+    dishesEl.innerHTML =
+      '<p class="card-sub" style="margin-bottom:10px;">Top dishes today</p>' +
+      topDishes.map(([name, qty]) => {
+        const pct = Math.round((qty / maxQty) * 100);
+        return `<div class="bar-row"><span class="bar-label">${escapeHtml(name)}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-n">${qty}</span></div>`;
+      }).join('');
+  }
+}
+
 /* ── Boot ── */
 (async () => {
   const profile = await scanflowRequireRole('owner');
@@ -1293,6 +1371,7 @@ function renderDashboardStats(){
   loadMenu();
   loadWaiters();
   loadTables();
+  loadOrderStats();
 })();
 document.getElementById('signoutBtn').addEventListener('click', scanflowSignOut);
 </script>
