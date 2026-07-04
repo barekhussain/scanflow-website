@@ -138,13 +138,33 @@ input.inline-input{width:80px;}
 
 .qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;}
 .qr-card{border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;background:var(--bg);}
-.qr-card img{width:100%;max-width:150px;border-radius:8px;background:#fff;padding:8px;border:1px solid var(--border);}
+.qr-card canvas{max-width:100%;height:auto !important;border-radius:8px;background:#fff;padding:8px;border:1px solid var(--border);}
 .qr-card .tnum{font-family:var(--serif);font-weight:600;font-size:16px;margin:10px 0 8px;}
 .qr-card .qr-actions{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
 
 .result-box{background:var(--bg);border:1.5px dashed var(--border);border-radius:12px;padding:16px;margin-top:16px;font-size:13.5px;line-height:1.8;}
 .result-box .rk{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;}
 .result-box .rv{font-family:var(--mono);font-weight:600;}
+
+.search-row{display:flex;gap:10px;margin-bottom:16px;}
+.search-row input{flex:1;font:inherit;font-size:14px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--ink);}
+.search-row input:focus{outline:none;border-color:var(--blue);background:#fff;}
+.dropzone{border:2px dashed var(--border);border-radius:12px;padding:26px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+.dropzone:hover,.dropzone.drag{border-color:var(--blue);background:var(--blue-soft);}
+.dropzone input{display:none;}
+.dropzone .dz-main{font-size:14px;font-weight:600;}
+.dropzone .dz-sub{font-size:12.5px;color:var(--muted);margin-top:4px;}
+.import-actions{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap;}
+.import-summary{margin-top:14px;font-size:13px;line-height:1.7;}
+.import-summary .bad{color:var(--red);}
+.import-summary .good{color:var(--green);}
+
+@media print{
+  .nav,.sidebar,.backdrop,.msg,.page-head,#view-tables > .note,#view-tables > .card:first-of-type,.qr-actions,#printAllBtn{display:none !important;}
+  body{background:#fff;}
+  .qr-grid{grid-template-columns:repeat(3,1fr);gap:14px;}
+  .qr-card{border:1px dashed #999;break-inside:avoid;box-shadow:none;background:#fff;}
+}
 
 @media(max-width:680px){.form-grid,.form-grid.cols-3{grid-template-columns:1fr;}table{font-size:12.5px;}.stat-grid{grid-template-columns:1fr 1fr;}}
 </style>
@@ -256,7 +276,24 @@ input.inline-input{width:80px;}
     </div>
 
     <div class="card">
+      <h2>Import many dishes at once</h2>
+      <p class="card-sub">Upload a CSV or Excel file instead of adding dishes one by one — handy if you're moving from a printed menu.</p>
+      <div class="dropzone" id="dropzone">
+        <input type="file" id="importFile" accept=".csv,.xlsx,.xls">
+        <div class="dz-main">📄 Click to choose a file, or drag one here</div>
+        <div class="dz-sub">.csv or .xlsx — columns: name, description, price, category, veg</div>
+      </div>
+      <div class="import-actions">
+        <button type="button" class="btn-ghost-sm" id="downloadTemplateBtn">Download template</button>
+        <button type="button" class="btn btn-primary" id="importBtn" disabled>Import dishes</button>
+        <span id="importFileName" style="font-size:12.5px;color:var(--ink-soft);"></span>
+      </div>
+      <div class="import-summary" id="importSummary"></div>
+    </div>
+
+    <div class="card">
       <h2>Your menu</h2>
+      <div class="search-row"><input type="text" id="menuSearch" placeholder="Search your menu…"></div>
       <table>
         <thead><tr><th>Dish</th><th></th><th>Category</th><th>Price</th><th>Status</th><th></th></tr></thead>
         <tbody id="menuRows"><tr class="empty-row"><td colspan="6">Loading…</td></tr></tbody>
@@ -314,22 +351,33 @@ input.inline-input{width:80px;}
       <h1>Tables &amp; QR codes</h1>
       <p>Add a table and get its QR code — customers scan this to open your menu.</p>
     </div>
-    <div class="note">The customer-facing ordering page isn't live yet, so these QR codes will 404 for now. Set tables up here ahead of time; the codes will start working the moment that page ships — no need to regenerate them.</div>
+    <div class="note">The customer-facing ordering page isn't live yet, so these QR codes will 404 for now. Set tables up here ahead of time; the codes will start working the moment that page ships — no need to regenerate them. Each table's code is permanent once created — there's no way to change it from here, by design, so a printed and laminated code never goes stale.</div>
     <div class="card">
-      <h2>Add a table</h2>
-      <form id="addTableForm">
-        <div class="form-grid">
-          <div class="field">
-            <label for="tNumber">Table number / name</label>
-            <input type="text" id="tNumber" required placeholder="e.g. 4, or Patio-2">
+      <h2>Add tables</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label for="tNumber">Add one table (number or name)</label>
+          <div class="pw-row">
+            <input type="text" id="tNumber" placeholder="e.g. 4, or Patio-2">
+            <button type="button" class="btn-ghost-sm" id="addOneTableBtn">Add</button>
           </div>
         </div>
-        <div class="btn-row"><button type="submit" class="btn btn-primary" id="addTableBtn">Add table</button></div>
-      </form>
+        <div class="field">
+          <label for="tBulkCount">Or add several at once, numbered automatically</label>
+          <div class="pw-row">
+            <input type="number" id="tBulkCount" min="1" max="200" placeholder="e.g. 10">
+            <button type="button" class="btn-ghost-sm" id="addBulkTablesBtn">Generate</button>
+          </div>
+          <p class="field-hint" id="bulkHint">Continues numbering after your highest existing table.</p>
+        </div>
+      </div>
     </div>
     <div class="card">
-      <h2>Your tables</h2>
-      <div class="qr-grid" id="tableGrid"><p style="color:var(--muted);font-size:13.5px;">Loading…</p></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <div><h2>Your tables</h2><p class="card-sub" style="margin-bottom:0;">Print these, laminate them, stick one on every table.</p></div>
+        <button type="button" class="btn-ghost-sm" id="printAllBtn">🖨️ Print all QR codes</button>
+      </div>
+      <div class="qr-grid" id="tableGrid" style="margin-top:16px;"><p style="color:var(--muted);font-size:13.5px;">Loading…</p></div>
     </div>
   </div>
 
@@ -365,6 +413,8 @@ input.inline-input{width:80px;}
 </div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="auth.js"></script>
 <script>
 let client;
@@ -450,7 +500,15 @@ function renderMenuTable(){
     tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No dishes yet — add your first one above.</td></tr>';
     return;
   }
-  tbody.innerHTML = menuCache.map(item => `
+  const term = (document.getElementById('menuSearch').value || '').trim().toLowerCase();
+  const visible = term
+    ? menuCache.filter(m => m.name.toLowerCase().includes(term) || (m.category || '').toLowerCase().includes(term))
+    : menuCache;
+  if (!visible.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">No dishes match "${escapeHtml(term)}".</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = visible.map(item => `
     <tr data-id="${item.id}">
       <td><strong>${escapeHtml(item.name)}</strong>${item.description ? `<br><span style="color:var(--muted);font-size:12px;">${escapeHtml(item.description)}</span>` : ''}</td>
       <td><span class="veg-dot ${item.is_veg ? 'v' : 'n'}"></span></td>
@@ -524,6 +582,129 @@ document.getElementById('addItemForm').addEventListener('submit', async (e) => {
   document.getElementById('iCategory').value = 'Mains';
   document.querySelectorAll('.veg-opt').forEach(o => o.classList.remove('checked'));
   document.querySelector('.veg-opt.veg').classList.add('checked');
+  loadMenu();
+});
+
+document.getElementById('menuSearch').addEventListener('input', renderMenuTable);
+
+/* ── Bulk import (CSV / Excel) ── */
+const dropzone = document.getElementById('dropzone');
+const importFileInput = document.getElementById('importFile');
+const importBtn = document.getElementById('importBtn');
+let pendingImportFile = null;
+
+dropzone.addEventListener('click', () => importFileInput.click());
+dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('drag'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropzone.classList.remove('drag');
+  if (e.dataTransfer.files.length) setImportFile(e.dataTransfer.files[0]);
+});
+importFileInput.addEventListener('change', () => {
+  if (importFileInput.files.length) setImportFile(importFileInput.files[0]);
+});
+function setImportFile(file){
+  pendingImportFile = file;
+  document.getElementById('importFileName').textContent = file.name;
+  importBtn.disabled = false;
+  document.getElementById('importSummary').innerHTML = '';
+}
+
+document.getElementById('downloadTemplateBtn').addEventListener('click', () => {
+  const csv = 'name,description,price,category,veg\n' +
+    'Veg Momos,Steamed dumplings with chutney,120,Starters,veg\n' +
+    'Butter Chicken,Creamy tomato gravy,280,Mains,nonveg\n';
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'scanflow-menu-template.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+function parseImportFile(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Could not read the file.'));
+    const isCsv = /\.csv$/i.test(file.name);
+    reader.onload = (e) => {
+      try {
+        const workbook = isCsv
+          ? XLSX.read(e.target.result, { type: 'string' })
+          : XLSX.read(e.target.result, { type: 'array' });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        resolve(XLSX.utils.sheet_to_json(sheet, { defval: '' }));
+      } catch (err) { reject(err); }
+    };
+    if (isCsv) reader.readAsText(file); else reader.readAsArrayBuffer(file);
+  });
+}
+
+document.getElementById('importBtn').addEventListener('click', async () => {
+  if (!pendingImportFile) return;
+  clearMsgs();
+  const summaryEl = document.getElementById('importSummary');
+  summaryEl.innerHTML = 'Reading file…';
+  importBtn.disabled = true;
+
+  let rawRows;
+  try { rawRows = await parseImportFile(pendingImportFile); }
+  catch (err) {
+    console.error('ScanFlow: import parse failed', err);
+    summaryEl.innerHTML = '<span class="bad">Could not read that file — make sure it\'s a valid CSV or Excel file.</span>';
+    importBtn.disabled = false;
+    return;
+  }
+
+  const goodRows = [];
+  let skipped = 0;
+  rawRows.forEach(raw => {
+    // Normalize keys to lowercase so "Name"/"NAME"/"name" all work.
+    const row = {};
+    Object.keys(raw).forEach(k => { row[k.trim().toLowerCase()] = raw[k]; });
+    const name = String(row.name || '').trim();
+    const price = parseFloat(row.price);
+    if (!name || isNaN(price) || price < 0) { skipped++; return; }
+    const vegRaw = String(row.veg || 'veg').trim().toLowerCase();
+    goodRows.push({
+      restaurant_id: myProfile.restaurant_id,
+      name,
+      description: String(row.description || '').trim() || null,
+      price,
+      category: String(row.category || '').trim() || 'Mains',
+      is_veg: !vegRaw.startsWith('non'),
+      in_stock: true
+    });
+  });
+
+  if (!goodRows.length) {
+    summaryEl.innerHTML = '<span class="bad">No usable rows found — check that your file has "name" and "price" columns filled in.</span>';
+    importBtn.disabled = false;
+    return;
+  }
+
+  summaryEl.innerHTML = `Importing ${goodRows.length} dishes…`;
+  let imported = 0;
+  const chunkSize = 200;
+  for (let i = 0; i < goodRows.length; i += chunkSize) {
+    const chunk = goodRows.slice(i, i + chunkSize);
+    const { error } = await client.from('menu_items').insert(chunk);
+    if (error) {
+      console.error('ScanFlow: bulk import chunk failed', error);
+      summaryEl.innerHTML = `<span class="good">${imported} dishes imported</span> before an error occurred: ${escapeHtml(error.message)}. Check the console for details.`;
+      importBtn.disabled = false;
+      loadMenu();
+      return;
+    }
+    imported += chunk.length;
+  }
+
+  summaryEl.innerHTML = `<span class="good">Imported ${imported} dishes.</span>${skipped ? ` Skipped ${skipped} row(s) missing a name or valid price.` : ''}`;
+  pendingImportFile = null;
+  importFileInput.value = '';
+  document.getElementById('importFileName').textContent = '';
+  importBtn.disabled = true;
   loadMenu();
 });
 
@@ -627,25 +808,46 @@ async function loadTables(){
     grid.innerHTML = '<p style="color:var(--muted);font-size:13.5px;">No tables yet — add your first one above.</p>';
     return;
   }
-  grid.innerHTML = tableCache.map(t => {
-    const menuUrl = `${window.location.origin}/menu.html?t=${t.qr_token}`;
-    const qrImg = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(menuUrl)}`;
-    return `
-      <div class="qr-card">
-        <img src="${qrImg}" alt="QR code for table ${escapeHtml(t.table_number)}" loading="lazy">
-        <div class="tnum">Table ${escapeHtml(t.table_number)}</div>
-        <div class="qr-actions">
-          <button class="btn-ghost-sm copy-link" data-url="${escapeHtml(menuUrl)}">Copy link</button>
-          <button class="mini-btn delete-table" data-id="${t.id}">Delete</button>
-        </div>
+  grid.innerHTML = tableCache.map(t => `
+    <div class="qr-card" data-id="${t.id}">
+      <canvas id="qr-${t.id}"></canvas>
+      <div class="tnum">Table ${escapeHtml(t.table_number)}</div>
+      <div class="qr-actions">
+        <button class="btn-ghost-sm copy-link" data-id="${t.id}">Copy link</button>
+        <button class="btn-ghost-sm download-qr" data-id="${t.id}" data-table="${escapeHtml(t.table_number)}">Download</button>
+        <button class="mini-btn delete-table" data-id="${t.id}">Delete</button>
       </div>
-    `;
-  }).join('');
+    </div>
+  `).join('');
+
+  // Draw each QR code client-side (canvas) — no external service, no
+  // CORS issues, and canvas.toDataURL() makes downloading fully reliable.
+  tableCache.forEach(t => {
+    const menuUrl = `${window.location.origin}/menu.html?t=${t.qr_token}`;
+    const canvas = document.getElementById('qr-' + t.id);
+    if (canvas && window.QRCode) {
+      QRCode.toCanvas(canvas, menuUrl, { width: 180, margin: 1 }, (err) => {
+        if (err) console.error('ScanFlow: QR render failed', err);
+      });
+    }
+  });
 
   document.querySelectorAll('.copy-link').forEach(btn => {
     btn.addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(btn.dataset.url); showSuccess('Link copied.'); }
+      const t = tableCache.find(x => x.id === btn.dataset.id);
+      const menuUrl = `${window.location.origin}/menu.html?t=${t.qr_token}`;
+      try { await navigator.clipboard.writeText(menuUrl); showSuccess('Link copied.'); }
       catch { showError('Could not copy — select and copy manually.'); }
+    });
+  });
+  document.querySelectorAll('.download-qr').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const canvas = document.getElementById('qr-' + btn.dataset.id);
+      if (!canvas) return;
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = `table-${btn.dataset.table}-qr.png`;
+      a.click();
     });
   });
   document.querySelectorAll('.delete-table').forEach(btn => {
@@ -659,27 +861,62 @@ async function loadTables(){
   });
 }
 
-document.getElementById('addTableForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  clearMsgs();
-  const btn = document.getElementById('addTableBtn');
-  const table_number = document.getElementById('tNumber').value.trim();
-  if (!table_number) { showError('Enter a table number or name.'); return; }
-
-  btn.disabled = true; btn.textContent = 'Adding…';
+async function addTable(table_number){
   const { error } = await client.from('restaurant_tables').insert({ restaurant_id: myProfile.restaurant_id, table_number });
-  btn.disabled = false; btn.textContent = 'Add table';
-
   if (error) {
     console.error('ScanFlow: could not add table', error);
-    if (error.code === '23505') showError(`Table "${table_number}" already exists.`);
-    else showError('Could not add the table. Check the console for details.');
+    if (error.code === '23505') throw new Error(`Table "${table_number}" already exists.`);
+    throw new Error('Could not add the table.');
+  }
+}
+
+document.getElementById('addOneTableBtn').addEventListener('click', async () => {
+  clearMsgs();
+  const input = document.getElementById('tNumber');
+  const table_number = input.value.trim();
+  if (!table_number) { showError('Enter a table number or name.'); return; }
+  const btn = document.getElementById('addOneTableBtn');
+  btn.disabled = true;
+  try {
+    await addTable(table_number);
+    showSuccess(`Table "${table_number}" added.`);
+    input.value = '';
+    loadTables();
+  } catch (err) { showError(err.message); }
+  finally { btn.disabled = false; }
+});
+
+document.getElementById('addBulkTablesBtn').addEventListener('click', async () => {
+  clearMsgs();
+  const countInput = document.getElementById('tBulkCount');
+  const count = parseInt(countInput.value, 10);
+  if (!count || count < 1) { showError('Enter how many tables to add.'); return; }
+  if (count > 200) { showError('Add up to 200 tables at a time.'); return; }
+
+  const numericExisting = tableCache.map(t => parseInt(t.table_number, 10)).filter(n => !isNaN(n));
+  const start = numericExisting.length ? Math.max(...numericExisting) + 1 : 1;
+  const rows = Array.from({ length: count }, (_, i) => ({
+    restaurant_id: myProfile.restaurant_id,
+    table_number: String(start + i)
+  }));
+
+  const btn = document.getElementById('addBulkTablesBtn');
+  btn.disabled = true; btn.textContent = 'Generating…';
+  const { error } = await client.from('restaurant_tables').insert(rows);
+  btn.disabled = false; btn.textContent = 'Generate';
+
+  if (error) {
+    console.error('ScanFlow: could not bulk-add tables', error);
+    if (error.code === '23505') showError(`Some table numbers in ${start}–${start + count - 1} already exist. Try a different starting point by renumbering, or add them one at a time.`);
+    else showError('Could not add these tables. Check the console for details.');
     return;
   }
-  showSuccess(`Table "${table_number}" added.`);
-  document.getElementById('addTableForm').reset();
+  showSuccess(`Added tables ${start}–${start + count - 1}.`);
+  countInput.value = '';
   loadTables();
 });
+
+document.getElementById('printAllBtn').addEventListener('click', () => window.print());
 
 /* ── Dashboard stats ── */
 function renderDashboardStats(){
